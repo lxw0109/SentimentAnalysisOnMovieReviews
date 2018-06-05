@@ -137,7 +137,7 @@ def data2vec(train_df, test_df):
     senti_series = train_df["Sentiment"]  # <Series>. shape: (156060,)
     phrase_series = train_df["Phrase"]  # <Series>. shape: (156060,)
     f = open("../data/output/train_vector.csv", "wb")
-    f.write("Phrase_vec\tSentiment\n".encode("utf-8"))  # NOTE: 不能以逗号分割，因为数据中有逗号分割的词，例如数字中的分隔符
+    f.write("Phrase_vec\tSentiment\n".encode("utf-8"))  # NOTE:不能以逗号分割,因为数据中有逗号分割的词,如数字中的分隔符
     for ind, phrase in enumerate(phrase_series):
         phrase = str(phrase)
         phrase_vec = np.zeros((vec_size,), dtype="float32")
@@ -182,6 +182,8 @@ if __name__ == "__main__":
     # # data_analysis(train_df, test_df)
     # rm_stopwords(train_df, test_df)
 
-    train_df, test_df = fetch_data_df(train_path="../data/output/train_wo_sw.csv",
-                                      test_path="../data/output/test_wo_sw.csv", sep="\t")
-    data2vec(train_df, test_df)
+    # train_df, test_df = fetch_data_df(train_path="../data/output/train_wo_sw.csv",
+    #                                   test_path="../data/output/test_wo_sw.csv", sep="\t")
+    # data2vec(train_df, test_df)
+
+    train_df, _ = fetch_data_df(train_path="../data/output/train_vector_100.csv", test_path="", sep="\t")
