@@ -133,6 +133,7 @@ def data2vec(train_df, test_df):
     # print(model.similarity("good", "bad"))  # 0.7190051208276236
 
     # 2. 生成Phrase vector
+    # Reference: [在python中如何用word2vec来计算句子的相似度](https://vimsky.com/article/3677.html)
     senti_series = train_df["Sentiment"]  # <Series>. shape: (156060,)
     phrase_series = train_df["Phrase"]  # <Series>. shape: (156060,)
     f = open("../data/output/train_vector.csv", "wb")
