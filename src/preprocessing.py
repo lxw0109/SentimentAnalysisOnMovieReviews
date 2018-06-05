@@ -5,10 +5,10 @@
 # Date: 5/14/18 10:53 PM
 
 import json
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import seaborn as sns
+# import seaborn as sns
 import time
 
 from gensim.models import KeyedVectors
@@ -121,10 +121,10 @@ def data2vec(train_df, test_df):
     """
     # 1. 加载模型
     start_time = time.time()
-    # model = KeyedVectors.load_word2vec_format("../data/input/models/GoogleNews-vectors-negative300.bin", binary=True)
+    model = KeyedVectors.load_word2vec_format("../data/input/models/GoogleNews-vectors-negative300.bin", binary=True)
     # model = FastText("/home/lxw/IT/program/github/NLP-Experiments/fastText/data/lxw_model_cbow.bin")  # OK
-    model = KeyedVectors.load_word2vec_format("/home/lxw/IT/program/github/NLP-Experiments/word2vec/data/"
-                                              "corpus.model.bin", binary=True)
+    # model = KeyedVectors.load_word2vec_format("/home/lxw/IT/program/github/NLP-Experiments/word2vec/data/"
+    #                                           "corpus.model.bin", binary=True)
     end_time = time.time()
     print("Loading Model Time Cost: {}".format(end_time - start_time))
     model_word_set = set(model.index2word)
