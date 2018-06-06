@@ -171,9 +171,20 @@ def data2vec(train_df, test_df):
     f.close()
 
 
-def data_preparation(train_df, test_df):
+def gen_train_eval_data(train_df):
+    """
+    通过train_test_split()得到训练集和验证集
+    :param train_df: 
+    :return: 
+    """
     y = train_df["Sentiment"]  # <Series>. shape: (156060,)
     y = np_utils.to_categorical(y)  # <ndarray of ndarray>. shape: (156060, 5)
+
+    X = train_df["Phrase_vec"]  # <Series>. shape: (156060,)
+    X = np.array([json.loads(vec) for vec in X])
+    X_train, X_eval, y_train, y_eval = train_test_split(X, y, test_size=0.333, shuffle=True, random_state=1)
+    # X_train: ndarray of ndarray.  y_train: ndarray.
+    return X_train, X_eval, y_train, y_eval
 
 
 if __name__ == "__main__":
@@ -186,4 +197,5 @@ if __name__ == "__main__":
     #                                   test_path="../data/output/test_wo_sw.csv", sep="\t")
     # data2vec(train_df, test_df)
 
-    train_df, _ = fetch_data_df(train_path="../data/output/train_vector_100.csv", test_path="", sep="\t")
+    train_df = pd.read_csv("../data/output/train_vector_100.csv", sep="\t")  # (156060, 2)
+    X_train, X_eval, y_train, y_eval = gen_train_eval_data(train_df)
