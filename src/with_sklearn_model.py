@@ -4,30 +4,11 @@
 # Author: lxw
 # Date: 6/6/18 1:46 PM
 
-import json
-import numpy as np
-import pandas as pd
-
 from sklearn import linear_model
 from sklearn.metrics import classification_report
 
-# from src.preprocessing import gen_train_eval_data
-from preprocessing import gen_train_eval_data
-
-
-def fetch_data():
-    """
-    :return: 
-    """
-    train_df = pd.read_csv("../data/output/train_vector.csv", sep="\t")  # (156060, 2)
-    X_train, X_eval, y_train, y_eval = gen_train_eval_data(train_df)
-
-    test_df = pd.read_csv("../data/output/test_vector.csv", sep="\t")  # (156060, 2)
-    X_test = test_df["Phrase_vec"]  # <Series>. shape: (,)
-    X_test = np.array([json.loads(vec) for vec in X_test])
-    X_test_id = test_df["PhraseId"]  # <Series>. shape: (,)
-    X_test_id = np.array(X_test_id)
-    return X_train, X_eval, X_test, X_test_id, y_train, y_eval
+# from src.preprocessing import gen_train_eval_test_data
+from preprocessing import gen_train_eval_test_data
 
 
 def train_eval_test(X_train, X_eval, X_test, X_test_id, y_train, y_eval):
@@ -59,7 +40,7 @@ def train_eval_test(X_train, X_eval, X_test, X_test_id, y_train, y_eval):
     model = SVC()
     '''
 
-    # 6. MLP: 多层感知器(神经网络)
+    # 6. [OK]MLP: 多层感知器(神经网络)
     from sklearn.neural_network import MLPClassifier
     # model = MLPClassifier(activation="relu", solver="adam", alpha=0.0001)
     # model = MLPClassifier(activation="identity", solver="adam", alpha=0.0001)
@@ -74,7 +55,7 @@ def train_eval_test(X_train, X_eval, X_test, X_test_id, y_train, y_eval):
 
 
 if __name__ == "__main__":
-    X_train, X_eval, X_test, X_test_id, y_train, y_eval = fetch_data()
+    X_train, X_eval, X_test, X_test_id, y_train, y_eval = gen_train_eval_test_data()
     print("X_train.shape:{0}\nX_eval.shape:{1}\nX_test.shape:{2}\nX_test_id.shape:{3}\ny_train.shape:{4}\ny_eval.shape:{5}\n".\
         format(X_train.shape, X_eval.shape, X_test.shape, X_test_id.shape, y_train.shape, y_eval.shape))
     train_eval_test(X_train, X_eval, X_test, X_test_id, y_train, y_eval)

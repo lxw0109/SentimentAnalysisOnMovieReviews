@@ -171,7 +171,7 @@ def data2vec(train_df, test_df):
     f.close()
 
 
-def gen_train_eval_data(train_df):
+def gen_train_val_data(train_df):
     """
     通过train_test_split()得到训练集和验证集
     :param train_df: 
@@ -179,12 +179,28 @@ def gen_train_eval_data(train_df):
     """
     y = train_df["Sentiment"]  # <Series>. shape: (156060,)
     y = np_utils.to_categorical(y)  # <ndarray of ndarray>. shape: (156060, 5)
+    assert y.shape[1] == 5
 
     X = train_df["Phrase_vec"]  # <Series>. shape: (156060,)
     X = np.array([json.loads(vec) for vec in X])
-    X_train, X_eval, y_train, y_eval = train_test_split(X, y, test_size=0.333, shuffle=True, random_state=1)
+    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.333, shuffle=True, random_state=1)
     # X_train: ndarray of ndarray.  y_train: ndarray.
-    return X_train, X_eval, y_train, y_eval
+    return X_train, X_val, y_train, y_val
+
+
+def gen_train_val_test_data():
+    """
+    :return: X_train, X_val, X_test, X_test_id, y_train, y_val
+    """
+    train_df = pd.read_csv("../data/output/train_vector.csv", sep="\t")  # (156060, 2)
+    X_train, X_val, y_train, y_val = gen_train_val_data(train_df)
+
+    test_df = pd.read_csv("../data/output/test_vector.csv", sep="\t")  # (156060, 2)
+    X_test = test_df["Phrase_vec"]  # <Series>. shape: (,)
+    X_test = np.array([json.loads(vec) for vec in X_test])
+    X_test_id = test_df["PhraseId"]  # <Series>. shape: (,)
+    # X_test_id = np.array(X_test_id)   # Keep X_test_id in <Series>.
+    return X_train, X_val, X_test, X_test_id, y_train, y_val
 
 
 if __name__ == "__main__":
@@ -197,5 +213,7 @@ if __name__ == "__main__":
     #                                   test_path="../data/output/test_wo_sw.csv", sep="\t")
     # data2vec(train_df, test_df)
 
-    train_df = pd.read_csv("../data/output/train_vector_100.csv", sep="\t")  # (156060, 2)
-    X_train, X_eval, y_train, y_eval = gen_train_eval_data(train_df)
+    # train_df = pd.read_csv("../data/output/train_vector_100.csv", sep="\t")  # (156060, 2)
+    # X_train, X_val, y_train, y_val = gen_train_val_data(train_df)
+
+    gen_train_val_test_data()
