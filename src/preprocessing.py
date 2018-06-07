@@ -215,7 +215,9 @@ if __name__ == "__main__":
 
     train_df, test_df = fetch_data_df(train_path="../data/output/train_wo_sw.csv",
                                       test_path="../data/output/test_wo_sw.csv", sep="\t")
+    print("Before drop_duplicates(), train_df.shape:", train_df.shape)
     train_df.drop_duplicates(inplace=True)
+    print("After drop_duplicates(), train_df.shape:", train_df.shape)
     data2vec(train_df, test_df)
 
     # train_df = pd.read_csv("../data/output/train_vector_100.csv", sep="\t")  # (156060, 2)
