@@ -72,13 +72,15 @@ def model_train_val(X_train, X_val, y_train, y_val):
 
     model = model_build(input_shape=(X_train.shape[1], X_train.shape[2]))
     early_stopping = EarlyStopping(monitor="val_loss", patience=10)
+
     BATCH_SIZE = 1024
-    EPOCHS = 300  # TODO
-    # Set a learning rate annealer
-    learning_rate_reduction = ReduceLROnPlateau(monitor="val_acc", patience=5, verbose=1, factor=0.5, min_lr=0.00001)  # TODO: 感觉应该monitor换成"val_loss"
+    EPOCHS = 300
+    # NOTE: It's said and I do think monitor="val_loss" is better than "val_acc".
+    # Reference: [Should we watch val_loss or val_acc in callbacks?](https://github.com/raghakot/keras-resnet/issues/41)
+    lr_reduction = ReduceLROnPlateau(monitor="val_loss", patience=5, verbose=1, factor=0.5, min_lr=0.00001)
     # hist_obj = model.fit(X_train, y_train, batch_size=BATCH_SIZE, epochs=EPOCHS, validation_split=0.1)
     hist_obj = model.fit(X_train, y_train, batch_size=BATCH_SIZE, epochs=EPOCHS, verbose=1,
-                         validation_data=(X_val, y_val), callbacks=[learning_rate_reduction, early_stopping])
+                         validation_data=(X_val, y_val), callbacks=[lr_reduction, early_stopping])
     with open("../data/output/history.pkl", "wb") as f:
         pickle.dump(hist_obj.history, f)
 
@@ -89,7 +91,7 @@ def plot_hist():
     import matplotlib.pyplot as plt
 
     history = None
-    with open("../data/output/history_50.pkl", "rb") as f:  # DEBUG
+    with open("../data/output/history_16.pkl", "rb") as f:  # DEBUG
         history = pickle.load(f)
     if not history:
         return
