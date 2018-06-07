@@ -218,6 +218,7 @@ if __name__ == "__main__":
     print("Before drop_duplicates(), train_df.shape:", train_df.shape)
     train_df.drop_duplicates(inplace=True)
     print("After drop_duplicates(), train_df.shape:", train_df.shape)
+    train_df.to_csv("../data/output/train_wo_sw_uniq.csv", index=False, sep="\t")
     data2vec(train_df, test_df)
 
     # train_df = pd.read_csv("../data/output/train_vector_100.csv", sep="\t")  # (156060, 2)
