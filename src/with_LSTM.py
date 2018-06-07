@@ -73,9 +73,11 @@ def model_train_val(X_train, X_val, y_train, y_val):
     model = model_build(input_shape=(X_train.shape[1], X_train.shape[2]))
     early_stopping = EarlyStopping(monitor="val_loss", patience=10)
     BATCH_SIZE = 512
-    EPOCHS = 300  # TODO
+    EPOCHS = 300
     # Set a learning rate annealer
-    learning_rate_reduction = ReduceLROnPlateau(monitor="val_acc", patience=3, verbose=1, factor=0.5, min_lr=0.00001)
+    # NOTE: It's said and I do think monitor="val_loss" is better than "val_acc".
+    # Reference: [Should we watch val_loss or val_acc in callbacks?](https://github.com/raghakot/keras-resnet/issues/41)
+    learning_rate_reduction = ReduceLROnPlateau(monitor="val_loss", patience=3, verbose=1, factor=0.5, min_lr=0.00001)
     # hist_obj = model.fit(X_train, y_train, batch_size=BATCH_SIZE, epochs=EPOCHS, validation_split=0.1)
     hist_obj = model.fit(X_train, y_train, batch_size=BATCH_SIZE, epochs=EPOCHS, verbose=1,
                          validation_data=(X_val, y_val), callbacks=[learning_rate_reduction, early_stopping])
