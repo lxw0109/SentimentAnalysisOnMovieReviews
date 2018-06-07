@@ -72,10 +72,10 @@ def model_train_val(X_train, X_val, y_train, y_val):
 
     model = model_build(input_shape=(X_train.shape[1], X_train.shape[2]))
     early_stopping = EarlyStopping(monitor="val_loss", patience=10)
-    BATCH_SIZE = 512
+    BATCH_SIZE = 1024
     EPOCHS = 300  # TODO
     # Set a learning rate annealer
-    learning_rate_reduction = ReduceLROnPlateau(monitor="val_acc", patience=3, verbose=1, factor=0.5, min_lr=0.00001)
+    learning_rate_reduction = ReduceLROnPlateau(monitor="val_acc", patience=5, verbose=1, factor=0.5, min_lr=0.00001)  # TODO: 感觉应该monitor换成"val_loss"
     # hist_obj = model.fit(X_train, y_train, batch_size=BATCH_SIZE, epochs=EPOCHS, validation_split=0.1)
     hist_obj = model.fit(X_train, y_train, batch_size=BATCH_SIZE, epochs=EPOCHS, verbose=1,
                          validation_data=(X_val, y_val), callbacks=[learning_rate_reduction, early_stopping])
@@ -142,11 +142,11 @@ if __name__ == "__main__":
           "y_train.shape:{4}\ny_val.shape:{5}\n".format(X_train.shape, X_val.shape, X_test.shape,
                                                          X_test_id.shape, y_train.shape, y_val.shape))
 
-    """
     model_train_val(X_train, X_val, y_train, y_val)
-    """
-    plot_hist()
+    # plot_hist()
 
+    """
     model = load_model("../data/output/models/lstm_50.model")   # DEBUG
     model_predict(model, X_test, X_test_id, X_val, y_val)
+    """
 
