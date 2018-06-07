@@ -136,7 +136,7 @@ def data2vec(train_df, test_df):
     # Reference: [在python中如何用word2vec来计算句子的相似度](https://vimsky.com/article/3677.html)
     senti_series = train_df["Sentiment"]  # <Series>. shape: (156060,)
     phrase_series = train_df["Phrase"]  # <Series>. shape: (156060,)
-    f = open("../data/output/train_vector.csv", "wb")
+    f = open("../data/output/train_vector_uniq.csv", "wb")
     f.write("Phrase_vec\tSentiment\n".encode("utf-8"))  # NOTE:不能以逗号分割,因为数据中有逗号分割的词,如数字中的分隔符
     for ind, phrase in enumerate(phrase_series):
         phrase = str(phrase)
@@ -152,6 +152,7 @@ def data2vec(train_df, test_df):
         f.write("{0}\t{1}\n".format(json.dumps(phrase_vec.tolist()), senti_series.iloc[ind]).encode("utf-8"))
     f.close()
 
+    """
     phrase_id_series = test_df["PhraseId"]  # <Series>. shape: (156060,)
     phrase_series = test_df["Phrase"]  # <Series>. shape: (156060,)
     f = open("../data/output/test_vector.csv", "wb")
@@ -169,6 +170,7 @@ def data2vec(train_df, test_df):
             phrase_vec = np.divide(phrase_vec, word_count)
         f.write("{0}\t{1}\n".format(phrase_id_series.iloc[ind], json.dumps(phrase_vec.tolist())).encode("utf-8"))
     f.close()
+    """
 
 
 def gen_train_val_data(train_df):
@@ -193,6 +195,8 @@ def gen_train_val_test_data():
     :return: X_train, X_val, X_test, X_test_id, y_train, y_val
     """
     train_df = pd.read_csv("../data/output/train_vector.csv", sep="\t")  # (156060, 2)
+    # train_df此处不需要去重, 去重的工作在生成word vector之前就完成了
+
     X_train, X_val, y_train, y_val = gen_train_val_data(train_df)
 
     test_df = pd.read_csv("../data/output/test_vector.csv", sep="\t")  # (156060, 2)
@@ -209,11 +213,12 @@ if __name__ == "__main__":
     # # data_analysis(train_df, test_df)
     # rm_stopwords(train_df, test_df)
 
-    # train_df, test_df = fetch_data_df(train_path="../data/output/train_wo_sw.csv",
-    #                                   test_path="../data/output/test_wo_sw.csv", sep="\t")
-    # data2vec(train_df, test_df)
+    train_df, test_df = fetch_data_df(train_path="../data/output/train_wo_sw.csv",
+                                      test_path="../data/output/test_wo_sw.csv", sep="\t")
+    train_df.drop_duplicates(inplace=True)
+    data2vec(train_df, test_df)
 
     # train_df = pd.read_csv("../data/output/train_vector_100.csv", sep="\t")  # (156060, 2)
     # X_train, X_val, y_train, y_val = gen_train_val_data(train_df)
 
-    gen_train_val_test_data()
+    # gen_train_val_test_data()
