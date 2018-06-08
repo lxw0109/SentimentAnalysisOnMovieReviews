@@ -91,7 +91,7 @@ def plot_hist():
     import matplotlib.pyplot as plt
 
     history = None
-    with open("../data/output/history_16.pkl", "rb") as f:  # DEBUG
+    with open("../data/output/history_295.pkl", "rb") as f:  # DEBUG
         history = pickle.load(f)
     if not history:
         return
@@ -139,13 +139,16 @@ def model_predict(model, X_test, X_test_id, X_val, y_val):
 
 
 if __name__ == "__main__":
+    """
     X_train, X_val, X_test, X_test_id, y_train, y_val = gen_train_val_test_data()
     print("X_train.shape:{0}\nX_val.shape:{1}\nX_test.shape:{2}\nX_test_id.shape:{3}\n"
           "y_train.shape:{4}\ny_val.shape:{5}\n".format(X_train.shape, X_val.shape, X_test.shape,
                                                          X_test_id.shape, y_train.shape, y_val.shape))
 
-    model_train_val(X_train, X_val, y_train, y_val)
-    # plot_hist()
+    # model_train_val(X_train, X_val, y_train, y_val)
+    """
+
+    plot_hist()
 
     """
     model = load_model("../data/output/models/lstm_50.model")   # DEBUG
