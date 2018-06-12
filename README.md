@@ -14,9 +14,11 @@ Kaggle竞赛题目[Sentiment Analysis on Movie Reviews](https://www.kaggle.com/c
 
 ## 3. LSTM实现方法结果绘制
 1. 迭代次数(epochs)取50时的loss和accuracy曲线如下图所示:
- ![docs/images/acc_loss_curve_50.png](docs/images/acc_loss_curve_50.png)  
+ ![docs/images/acc_loss_curve_50.png](docs/images/acc_loss_curve_ep50_bs512.png)  
  从图中我们可以看出训练集和验证集上的accuracy都还在提高, loss都还在下降, 说明模型参数还可以继续迭代优化, 以提升模型预测效果
 
 ## TODO
-1. batch_size取1024好像不如512模型收敛的速度快
-2. 感觉学习率有点儿小, 可以调大学习率
+1. batch_size取1024**似乎**不如512模型收敛的速度快(要达到相同的精度, batch_size为1024时需要的epochs更多)
+2. 尝试将初始lr调整为1e-4，现在的默认值好像是1e-3，lr的decay应该取得大一点（decay的速度要加快一点点?）
+3. 感觉学习率有点儿小, 可以调大学习率
+
