@@ -102,9 +102,13 @@ def plot_hist():
     # with open("../data/output/history_50_512.pkl", "rb") as f:
     # with open("../data/output/history_69_128.pkl", "rb") as f:
     # with open("../data/output/history_74_64.pkl", "rb") as f:
-    # with open("../data/output/history_88_512.pkl", "rb") as f:
     # with open("../data/output/history_16_256.pkl", "rb") as f:
-    with open("../data/output/history_50_32.pkl", "rb") as f:
+    # with open("../data/output/history_50_32.pkl", "rb") as f:
+    # with open("../data/output/history_65_16.pkl", "rb") as f:
+    # with open("../data/output/history_26_128.pkl", "rb") as f:
+    # with open("../data/output/history_88_512.pkl", "rb") as f:
+    # with open("../data/output/history_111_1024.pkl", "rb") as f:
+    with open("../data/output/history_81_512.pkl", "rb") as f:
         history = pickle.load(f)
     if not history:
         return
