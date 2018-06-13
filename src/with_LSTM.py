@@ -16,6 +16,7 @@ from keras.layers import Dense
 from keras.layers import Dropout
 from keras.layers import LSTM, GRU
 from keras.models import load_model
+from keras.optimizers import Adam
 from keras.utils import np_utils
 
 # from src.preprocessing import gen_train_val_test_data
@@ -40,14 +41,14 @@ def model_build(input_shape, num_classes=5):
     model.add(Dropout(0.25, name="dropout4"))
 
     """
-    model.add(LSTM(units=layers[2], return_sequences=False, name="lstm7"))
+    model.add(LSTM(units=128, return_sequences=True, name="lstm7"))
     # model.add(GRU(units=layers[2], return_sequences=False, name="gru7"))
     model.add(Dropout(0.25, name="dropout8"))
 
-    model.add(LSTM(units=layers[3], return_sequences=True, name="lstm9"))
+    model.add(LSTM(units=128, return_sequences=True, name="lstm9"))
     model.add(Dropout(0.25, name="dropout10"))
 
-    model.add(LSTM(units=layers[4], return_sequences=True, name="lstm11"))
+    model.add(LSTM(units=128, return_sequences=False, name="lstm11"))
     model.add(Dropout(0.25, name="dropout12"))
 
     model.add(LSTM(units=layers[5], return_sequences=False, name="lstm13"))
@@ -60,6 +61,10 @@ def model_build(input_shape, num_classes=5):
     # optimizer="rmsprop". This optimizer is usually a good choice for Recurrent Neural Networks.
     # model.compile(loss="categorical_crossentropy", optimizer="rmsprop", metrics=["accuracy"])
     model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"])
+    """
+    adam_opt = Adam(lr=1e-4)
+    model.compile(loss="categorical_crossentropy", optimizer=adam_opt, metrics=["accuracy"])    # 默认lr为1e-3,调整为1e-4
+    """
     print("> Compilation Time: ", time.time() - start)
 
     return model
@@ -73,18 +78,19 @@ def model_train_val(X_train, X_val, y_train, y_val):
     model = model_build(input_shape=(X_train.shape[1], X_train.shape[2]))
     early_stopping = EarlyStopping(monitor="val_loss", patience=10)
 
-    BATCH_SIZE = 1024
-    EPOCHS = 300
+    BATCH_SIZE = 1024 # 32  # 64  # 128  # 256  # 512  # 1024
+    EPOCHS = 200
     # NOTE: It's said and I do think monitor="val_loss" is better than "val_acc".
     # Reference: [Should we watch val_loss or val_acc in callbacks?](https://github.com/raghakot/keras-resnet/issues/41)
-    lr_reduction = ReduceLROnPlateau(monitor="val_loss", patience=5, verbose=1, factor=0.8, min_lr=0.00001)
+    # lr_reduction = ReduceLROnPlateau(monitor="val_loss", patience=5, verbose=1, factor=0.2, min_lr=1e-6)  # DEBUG
+    lr_reduction = ReduceLROnPlateau(monitor="val_loss", patience=5, verbose=1, factor=0.2, min_lr=1e-5)
     # hist_obj = model.fit(X_train, y_train, batch_size=BATCH_SIZE, epochs=EPOCHS, validation_split=0.1)
     hist_obj = model.fit(X_train, y_train, batch_size=BATCH_SIZE, epochs=EPOCHS, verbose=1,
                          validation_data=(X_val, y_val), callbacks=[lr_reduction, early_stopping])
-    with open("../data/output/history.pkl", "wb") as f:
+    with open(f"../data/output/history_{BATCH_SIZE}.pkl", "wb") as f:
         pickle.dump(hist_obj.history, f)
 
-    model.save("../data/output/models/lstm.model")
+    model.save(f"../data/output/models/lstm_{BATCH_SIZE}.model")
 
 
 def plot_hist():
@@ -149,19 +155,16 @@ def model_predict(model, X_test, X_test_id, X_val, y_val):
 
 
 if __name__ == "__main__":
-    """
     X_train, X_val, X_test, X_test_id, y_train, y_val = gen_train_val_test_data()
     print("X_train.shape:{0}\nX_val.shape:{1}\nX_test.shape:{2}\nX_test_id.shape:{3}\n"
           "y_train.shape:{4}\ny_val.shape:{5}\n".format(X_train.shape, X_val.shape, X_test.shape,
                                                          X_test_id.shape, y_train.shape, y_val.shape))
 
     # model_train_val(X_train, X_val, y_train, y_val)
-    """
+    # plot_hist()
 
-    plot_hist()
-
-    """
-    model = load_model("../data/output/models/lstm_50.model")   # DEBUG
+    model = load_model("../data/output/models/lstm.model")   # DEBUG
     model_predict(model, X_test, X_test_id, X_val, y_val)
+    """
     """
 
