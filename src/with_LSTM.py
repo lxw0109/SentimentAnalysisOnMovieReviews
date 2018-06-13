@@ -78,7 +78,7 @@ def model_train_val(X_train, X_val, y_train, y_val):
     model = model_build(input_shape=(X_train.shape[1], X_train.shape[2]))
     early_stopping = EarlyStopping(monitor="val_loss", patience=10)
 
-    BATCH_SIZE = 1024 # 32  # 64  # 128  # 256  # 512  # 1024
+    BATCH_SIZE = 512  # 32  # 64  # 128  # 256  # 512  # 1024
     EPOCHS = 200
     # NOTE: It's said and I do think monitor="val_loss" is better than "val_acc".
     # Reference: [Should we watch val_loss or val_acc in callbacks?](https://github.com/raghakot/keras-resnet/issues/41)
@@ -157,11 +157,11 @@ if __name__ == "__main__":
           "y_train.shape:{4}\ny_val.shape:{5}\n".format(X_train.shape, X_val.shape, X_test.shape,
                                                          X_test_id.shape, y_train.shape, y_val.shape))
 
-    # model_train_val(X_train, X_val, y_train, y_val)
+    model_train_val(X_train, X_val, y_train, y_val)
     # plot_hist()
 
-    model = load_model("../data/output/models/lstm.model")   # DEBUG
-    model_predict(model, X_test, X_test_id, X_val, y_val)
     """
+    model = load_model("../data/output/models/lstm_512.model")   # DEBUG
+    model_predict(model, X_test, X_test_id, X_val, y_val)
     """
 
