@@ -7,10 +7,12 @@
 import numpy as np
 import pandas as pd
 import pickle
+import tensorflow as tf
 import time
 
 from keras import Sequential
 from keras.callbacks import EarlyStopping
+from keras.callbacks import ModelCheckpoint
 from keras.callbacks import ReduceLROnPlateau
 from keras.layers import Dense
 from keras.layers import Dropout
@@ -58,6 +60,9 @@ def model_build(input_shape, num_classes=5):
     model.add(Dense(units=num_classes, activation="softmax", name="dense5"))
 
     start = time.time()
+
+    # model.load_weights("../data/output/models/best_model_08_0.92.hdf5")  # OK: 加载模型权重  # DEBUG
+
     # optimizer="rmsprop". This optimizer is usually a good choice for Recurrent Neural Networks.
     # model.compile(loss="categorical_crossentropy", optimizer="rmsprop", metrics=["accuracy"])
     model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"])
@@ -75,18 +80,23 @@ def model_train_val(X_train, X_val, y_train, y_val):
     X_val = np.reshape(X_val, (X_val.shape[0], X_val.shape[1], 1))
     print("X_train.shape:{0}\nX_val.shape:{1}\n".format(X_train.shape, X_val.shape))
 
-    model = model_build(input_shape=(X_train.shape[1], X_train.shape[2]))
-    early_stopping = EarlyStopping(monitor="val_loss", patience=10)
-
     BATCH_SIZE = 1024 # 32  # 64  # 128  # 256  # 512  # 1024
     EPOCHS = 200
+    model = model_build(input_shape=(X_train.shape[1], X_train.shape[2]))
+
+    early_stopping = EarlyStopping(monitor="val_loss", patience=10)
     # NOTE: It's said and I do think monitor="val_loss" is better than "val_acc".
     # Reference: [Should we watch val_loss or val_acc in callbacks?](https://github.com/raghakot/keras-resnet/issues/41)
     # lr_reduction = ReduceLROnPlateau(monitor="val_loss", patience=5, verbose=1, factor=0.2, min_lr=1e-6)  # DEBUG
     lr_reduction = ReduceLROnPlateau(monitor="val_loss", patience=5, verbose=1, factor=0.2, min_lr=1e-5)
+    # 检查最好模型: 只要有提升, 就保存一次
+    model_path = "../data/output/models/best_model_{epoch:02d}_{val_loss:.2f}.hdf5"  # 保存到多个模型文件
+    # model_path = "../data/output/models/best_model.hdf5"  # 保存到1个模型文件(因为文件名相同)
+    checkpoint = ModelCheckpoint(filepath=model_path, monitor="val_loss", verbose=1, save_best_only=True, mode="min")
+
     # hist_obj = model.fit(X_train, y_train, batch_size=BATCH_SIZE, epochs=EPOCHS, validation_split=0.1)
     hist_obj = model.fit(X_train, y_train, batch_size=BATCH_SIZE, epochs=EPOCHS, verbose=1,
-                         validation_data=(X_val, y_val), callbacks=[lr_reduction, early_stopping])
+                         validation_data=(X_val, y_val), callbacks=[early_stopping, lr_reduction, checkpoint])
     with open(f"../data/output/history_{BATCH_SIZE}.pkl", "wb") as f:
         pickle.dump(hist_obj.history, f)
 
@@ -156,13 +166,17 @@ def model_predict(model, X_test, X_test_id, X_val, y_val):
 
 
 if __name__ == "__main__":
+    # For reproducibility
+    np.random.seed(1)
+    tf.set_random_seed(1)
+
     X_train, X_val, X_test, X_test_id, y_train, y_val = gen_train_val_test_data()
     print("X_train.shape:{0}\nX_val.shape:{1}\nX_test.shape:{2}\nX_test_id.shape:{3}\n"
           "y_train.shape:{4}\ny_val.shape:{5}\n".format(X_train.shape, X_val.shape, X_test.shape,
                                                          X_test_id.shape, y_train.shape, y_val.shape))
 
-    # model_train_val(X_train, X_val, y_train, y_val)
-    plot_hist()
+    model_train_val(X_train, X_val, y_train, y_val)
+    # plot_hist()
 
     """
     model = load_model("../data/output/models/lstm.model")   # DEBUG
