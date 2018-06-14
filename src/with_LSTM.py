@@ -100,7 +100,7 @@ def model_train_val(X_train, X_val, y_train, y_val):
     with open(f"../data/output/history_{BATCH_SIZE}.pkl", "wb") as f:
         pickle.dump(hist_obj.history, f)
 
-    model.save(f"../data/output/models/lstm_{BATCH_SIZE}.model")
+    # model.save(f"../data/output/models/lstm_{BATCH_SIZE}.model")
 
 
 def plot_hist():
@@ -175,11 +175,11 @@ if __name__ == "__main__":
           "y_train.shape:{4}\ny_val.shape:{5}\n".format(X_train.shape, X_val.shape, X_test.shape,
                                                          X_test_id.shape, y_train.shape, y_val.shape))
 
-    model_train_val(X_train, X_val, y_train, y_val)
+    # model_train_val(X_train, X_val, y_train, y_val)
     # plot_hist()
 
-    """
-    model = load_model("../data/output/models/lstm_512.model")   # DEBUG
+    model = load_model("../data/output/models/best_model_69_1.01.hdf5")   # DEBUG
     model_predict(model, X_test, X_test_id, X_val, y_val)
+    """
     """
 
