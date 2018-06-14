@@ -80,7 +80,7 @@ def model_train_val(X_train, X_val, y_train, y_val):
     X_val = np.reshape(X_val, (X_val.shape[0], X_val.shape[1], 1))
     print("X_train.shape:{0}\nX_val.shape:{1}\n".format(X_train.shape, X_val.shape))
 
-    BATCH_SIZE = 1024 # 32  # 64  # 128  # 256  # 512  # 1024
+    BATCH_SIZE = 512  # 32  # 64  # 128  # 256  # 512  # 1024
     EPOCHS = 200
     model = model_build(input_shape=(X_train.shape[1], X_train.shape[2]))
 
@@ -179,7 +179,7 @@ if __name__ == "__main__":
     # plot_hist()
 
     """
-    model = load_model("../data/output/models/lstm.model")   # DEBUG
+    model = load_model("../data/output/models/lstm_512.model")   # DEBUG
     model_predict(model, X_test, X_test_id, X_val, y_val)
     """
 
