@@ -100,7 +100,7 @@ def model_train_val(X_train, X_val, y_train, y_val):
     with open(f"../data/output/history_{BATCH_SIZE}.pkl", "wb") as f:
         pickle.dump(hist_obj.history, f)
 
-    model.save(f"../data/output/models/lstm_{BATCH_SIZE}.model")
+    # model.save(f"../data/output/models/lstm_{BATCH_SIZE}.model")
 
 
 def plot_hist():
