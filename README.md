@@ -9,7 +9,7 @@ Kaggle竞赛题目[Sentiment Analysis on Movie Reviews](https://www.kaggle.com/c
 | **LSTM v1.0** | 0.58319 | 50(从下面的loss-acc曲线可以看出并没有收敛, underfitting) | 512 | 采用word2vec([GoogleNews-vectors-negative300.bin](https://github.com/3Top/word2vec-api)), 没有考虑PhraseId和SentenceId, 训练集中重复样本没有去重 |
 | **LSTM v2.0** | 0.55754 | 295 | 1024 | 与v1.0区别: 1.增加迭代次数 2.去除了训练集中的重复样本 |
 | **LSTM v3.0** | 0.57872 | 111 | 1024 | 与v2.0区别: 训练集中重复样本没有去重 |
-| **LSTM v3.0** | 0.58889 | 81 | 512 | 与v3.0区别: 减少batch_size |
+| **LSTM v4.0** | 0.58889 | 81 | 512 | 与v3.0区别: 减少batch_size |
 
 ## 2. 关于预处理
 拿到数据首先应该做的就是预处理, 包括一些数据统计工作, 例如**统计样本的数据分布情况(label是否分布均匀)**, **查看样本数据缺失值的情况(并填补缺失值)**, **标准化&归一化**, **to_categorical**, **reshape**, **train_test_split**, **数据扩充(data augmentation)**, **特征提取**, **特征选择**, **降维**等
