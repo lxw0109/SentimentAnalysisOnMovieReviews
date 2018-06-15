@@ -1,5 +1,5 @@
 # 问题分析
-## 1.当`batch_size`取值为64, `epochs`到74时由于代码中的`EarlyStopping(monitor="val_loss", patience=10)`的设置，训练停止.
+#### 1.当`batch_size`取值为64, `epochs`到74时由于代码中的`EarlyStopping(monitor="val_loss", patience=10)`的设置，训练停止.
 ```bash
 71040/71040 [==============================] - 369s 5ms/step - loss: 1.3435 - acc: 0.4705 - val_loss: 1.3459 - val_acc: 0.4672
 Epoch 2/100
