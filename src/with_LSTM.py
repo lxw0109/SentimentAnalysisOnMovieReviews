@@ -107,7 +107,7 @@ def plot_hist():
     import matplotlib.pyplot as plt
 
     history = None
-    with open("../data/output/history_1024.pkl", "rb") as f:  # DEBUG
+    with open("../data/output/history/history_512_v5.0.pkl", "rb") as f:  # DEBUG
         history = pickle.load(f)
     if not history:
         return
