@@ -67,7 +67,7 @@ def data_analysis(train_df, test_df):
 def rm_stopwords(train_df, test_df):
     """
     分词 -> 去停用词
-    生成文件"../data/output/train_wo_sw.csv"
+    生成文件"../data/output/train_wo_sw.csv" 和 "test_wo_sw.csv"
     :param train_df: 
     :param test_df: 
     :return: 
@@ -152,7 +152,6 @@ def data2vec(train_df, test_df):
         f.write("{0}\t{1}\n".format(json.dumps(phrase_vec.tolist()), senti_series.iloc[ind]).encode("utf-8"))
     f.close()
 
-    """
     phrase_id_series = test_df["PhraseId"]  # <Series>. shape: (156060,)
     phrase_series = test_df["Phrase"]  # <Series>. shape: (156060,)
     f = open("../data/output/test_vector.csv", "wb")
@@ -171,7 +170,79 @@ def data2vec(train_df, test_df):
         f.write("{0}\t{1}\n".format(phrase_id_series.iloc[ind], json.dumps(phrase_vec.tolist())).encode("utf-8"))
     f.close()
     """
+    """
 
+
+def data2matrix(train_df, test_df):
+    """
+    matrix of phrase vector, 并将结果写入文件../data/output/train_matrix.csv, ../data/output/test_matrix.csv
+    :param train_df: 
+    :param test_df: 
+    :return: max_phrase_length
+    """
+    # 1. 加载模型
+    start_time = time.time()
+    model = KeyedVectors.load_word2vec_format("../data/input/models/GoogleNews-vectors-negative300.bin", binary=True)
+    # model = FastText("/home/lxw/IT/program/github/NLP-Experiments/fastText/data/lxw_model_cbow.bin")  # OK
+    # model = KeyedVectors.load_word2vec_format("/home/lxw/IT/program/github/NLP-Experiments/word2vec/data/"
+    #                                           "corpus.model.bin", binary=True)
+    end_time = time.time()
+    print("Loading Model Time Cost: {}".format(end_time - start_time))
+    model_word_set = set(model.index2word)
+    # vec_size = model.vector_size
+    # model.index2entity == model.index2word: True
+    # print(model.similarity("good", "bad"))  # 0.7190051208276236
+
+    # 2. 生成Phrase vector
+    # Reference: [在python中如何用word2vec来计算句子的相似度](https://vimsky.com/article/3677.html)
+    senti_series = train_df["Sentiment"]  # <Series>. shape: (156060,)
+    phrase_series = train_df["Phrase"]  # <Series>. shape: (156060,)
+    f = open("../data/output/train_matrix.csv", "wb")
+    f.write("Phrase_vec\tSentiment\n".encode("utf-8"))  # NOTE:不能以逗号分割,因为数据中有逗号分割的词,如数字中的分隔符
+    max_phrase_length = 0
+    for ind, phrase in enumerate(phrase_series):
+        phrase = str(phrase)
+        phrase_matrix = []  # list of list.
+        phrase_length = 0
+        word_list = phrase.split()
+        for word in word_list:
+            if word in model_word_set:
+                phrase_length += 1
+                phrase_matrix.append(model[word].tolist())  # type(model[word]): ndarray
+        if phrase_length > max_phrase_length:
+            max_phrase_length = phrase_length
+        f.write("{0}\t{1}\n".format(json.dumps(phrase_matrix), senti_series.iloc[ind]).encode("utf-8"))
+    f.close()
+
+    phrase_id_series = test_df["PhraseId"]  # <Series>. shape: (156060,)
+    phrase_series = test_df["Phrase"]  # <Series>. shape: (156060,)
+    f = open("../data/output/test_matrix.csv", "wb")
+    f.write("PhraseId\tPhrase_vec\n".encode("utf-8"))  # NOTE: 不能以逗号分割，因为数据中有逗号分割的词，例如数字中的分隔符
+    for ind, phrase in enumerate(phrase_series):
+        phrase = str(phrase)
+        phrase_matrix = []  # list of list.
+        phrase_length = 0
+        word_list = phrase.split()
+        for word in word_list:
+            if word in model_word_set:
+                phrase_length += 1
+                phrase_matrix.append(model[word].tolist())  # type(model[word]): ndarray
+        if phrase_length > max_phrase_length:
+            max_phrase_length = phrase_length
+        f.write("{0}\t{1}\n".format(phrase_id_series.iloc[ind], json.dumps(phrase_matrix)).encode("utf-8"))
+    f.close()
+    return max_phrase_length
+
+
+def fill_train_test_matrix():
+    """
+    补齐"../data/output/train_matrix.csv"和"../data/output/test_matrix.csv"到最大短语长度(max_phrase_length)
+    :return: 
+    """
+    # 1. 补齐 "../data/output/train_matrix.csv"
+    with open("../data/output/train_matrix.csv") as f:
+        X = train_df["Phrase_vec"]  # <Series>. shape: (156060,)
+        X = np.array([json.loads(vec) for vec in X])
 
 def gen_train_val_data(train_df):
     """
@@ -208,18 +279,26 @@ def gen_train_val_test_data():
 
 
 if __name__ == "__main__":
-    # train_df, test_df = fetch_data_df(train_path="../data/input/train.tsv",
-    #                                   test_path="../data/input/test.tsv", sep="\t")
-    # # data_analysis(train_df, test_df)
-    # rm_stopwords(train_df, test_df)
+    """
+    # 1. 去除phrase中的stopwords, 生成文件"../data/output/train_wo_sw.csv" 和 "test_wo_sw.csv"
+    origin_train_path = "../data/input/train.tsv"
+    origin_test_path = "../data/input/test.tsv"
+    train_df, test_df = fetch_data_df(train_path= origin_train_path, test_path=origin_test_path, sep="\t")
+    # data_analysis(train_df, test_df)
+    rm_stopwords(train_df, test_df)
+    """
 
-    train_df, test_df = fetch_data_df(train_path="../data/output/train_wo_sw.csv",
-                                      test_path="../data/output/test_wo_sw.csv", sep="\t")
-    print("Before drop_duplicates(), train_df.shape:", train_df.shape)
-    train_df.drop_duplicates(inplace=True)
-    print("After drop_duplicates(), train_df.shape:", train_df.shape)
-    train_df.to_csv("../data/output/train_wo_sw_uniq.csv", index=False, sep="\t")
-    data2vec(train_df, test_df)
+    train_path = "../data/output/train_wo_sw.csv"  # "train_wo_sw_uniq.csv"
+    test_path = "../data/output/test_wo_sw.csv"
+    train_df, test_df = fetch_data_df(train_path=train_path, test_path=test_path, sep="\t")
+    train_uniq_flag = False  # True. 只运行一次即可. 以后都设置为False
+    if train_uniq_flag:
+        print("Before drop_duplicates(), train_df.shape:", train_df.shape)  #  (156060, 2)
+        train_df.drop_duplicates(inplace=True)
+        print("After drop_duplicates(), train_df.shape:", train_df.shape)  # (106507, 2)
+        train_df.to_csv("../data/output/train_wo_sw_uniq.csv", index=False, sep="\t")
+    # data2vec(train_df, test_df)
+    max_phrase_length = data2matrix(train_df, test_df)
 
     # train_df = pd.read_csv("../data/output/train_vector_100.csv", sep="\t")  # (156060, 2)
     # X_train, X_val, y_train, y_val = gen_train_val_data(train_df)
