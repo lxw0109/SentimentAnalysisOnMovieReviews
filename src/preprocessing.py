@@ -189,6 +189,8 @@ def data2matrix(train_df, test_df):
     end_time = time.time()
     print("Loading Model Time Cost: {}".format(end_time - start_time))
     model_word_set = set(model.index2word)
+    with open("../data/output/word_set.json") as f:
+        json.dump(list(model_word_set), f)
     # vec_size = model.vector_size
     # model.index2entity == model.index2word: True
     # print(model.similarity("good", "bad"))  # 0.7190051208276236
@@ -197,11 +199,11 @@ def data2matrix(train_df, test_df):
     # Reference: [在python中如何用word2vec来计算句子的相似度](https://vimsky.com/article/3677.html)
     senti_series = train_df["Sentiment"]  # <Series>. shape: (156060,)
     phrase_series = train_df["Phrase"]  # <Series>. shape: (156060,)
-    f = open("../data/output/train_matrix.csv", "wb")
+    f = open("../data/output/train_matrix_lower.csv", "wb")
     f.write("Phrase_vec\tSentiment\n".encode("utf-8"))  # NOTE:不能以逗号分割,因为数据中有逗号分割的词,如数字中的分隔符
     max_phrase_length = 0
     for ind, phrase in enumerate(phrase_series):
-        phrase = str(phrase)
+        phrase = str(phrase).lower()
         phrase_matrix = []  # list of list.
         phrase_length = 0
         word_list = phrase.split()
@@ -216,10 +218,10 @@ def data2matrix(train_df, test_df):
 
     phrase_id_series = test_df["PhraseId"]  # <Series>. shape: (156060,)
     phrase_series = test_df["Phrase"]  # <Series>. shape: (156060,)
-    f = open("../data/output/test_matrix.csv", "wb")
+    f = open("../data/output/test_matrix_lower.csv", "wb")
     f.write("PhraseId\tPhrase_vec\n".encode("utf-8"))  # NOTE: 不能以逗号分割，因为数据中有逗号分割的词，例如数字中的分隔符
     for ind, phrase in enumerate(phrase_series):
-        phrase = str(phrase)
+        phrase = str(phrase).lower()
         phrase_matrix = []  # list of list.
         phrase_length = 0
         word_list = phrase.split()
