@@ -16,10 +16,11 @@ from keras.callbacks import ModelCheckpoint
 from keras.callbacks import ReduceLROnPlateau
 from keras.layers import Dense
 from keras.layers import Dropout
-from keras.layers import LSTM, GRU
-from keras.models import load_model
-from keras.optimizers import Adam
-from keras.utils import np_utils
+from keras.layers import LSTM
+from keras.layers import Masking
+# from keras.models import load_model
+# from keras.optimizers import Adam
+# from keras.utils import np_utils
 
 # from src.preprocessing import gen_train_val_test_data
 from preprocessing import gen_train_val_test_data
@@ -32,9 +33,11 @@ def model_build(input_shape, num_classes=5):
     """
     model = Sequential()
 
+    model.add(Masking(mask_value=-1, input_shape=input_shape, name="masking_layer"))
     # The way Keras LSTM layers work is by taking in a numpy array of 3 dimensions (N, W, F) where N is the
     # number of training sequences, W is the sequence length and F is the number of features of each sequence.
-    model.add(LSTM(units=64, input_shape=input_shape, return_sequences=True, name="lstm1"))
+    # model.add(LSTM(units=64, input_shape=input_shape, return_sequences=True, name="lstm1"))
+    model.add(LSTM(units=64, return_sequences=True, name="lstm1"))
     # model.add(GRU(units=64, input_shape=input_shape, return_sequences=True, name="gru1"))
     model.add(Dropout(0.25, name="dropout2"))
 
@@ -76,8 +79,9 @@ def model_build(input_shape, num_classes=5):
 
 
 def model_train_val(X_train, X_val, y_train, y_val):
-    X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1], 1))
-    X_val = np.reshape(X_val, (X_val.shape[0], X_val.shape[1], 1))
+    if len(X_train.shape) == 2:  # 2: vector.  3: matrix.
+        X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1], 1))
+        X_val = np.reshape(X_val, (X_val.shape[0], X_val.shape[1], 1))
     print("X_train.shape:{0}\nX_val.shape:{1}\n".format(X_train.shape, X_val.shape))
 
     BATCH_SIZE = 1024  # 32  # 64  # 128  # 256  # 512  # 1024
