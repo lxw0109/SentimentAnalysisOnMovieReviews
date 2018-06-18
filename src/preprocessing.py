@@ -189,8 +189,10 @@ def data2matrix(train_df, test_df):
     end_time = time.time()
     print("Loading Model Time Cost: {}".format(end_time - start_time))
     model_word_set = set(model.index2word)
+    """
     with open("../data/output/word_set.json") as f:
         json.dump(list(model_word_set), f)
+    """
     # vec_size = model.vector_size
     # model.index2entity == model.index2word: True
     # print(model.similarity("good", "bad"))  # 0.7190051208276236
@@ -233,18 +235,47 @@ def data2matrix(train_df, test_df):
             max_phrase_length = phrase_length
         f.write("{0}\t{1}\n".format(phrase_id_series.iloc[ind], json.dumps(phrase_matrix)).encode("utf-8"))
     f.close()
-    return max_phrase_length
+
+    fill_train_test_matrix(max_phrase_length)
 
 
-def fill_train_test_matrix():
+def fill_train_test_matrix(max_phrase_length):
     """
-    补齐"../data/output/train_matrix.csv"和"../data/output/test_matrix.csv"到最大短语长度(max_phrase_length)
+    补齐"../data/output/train_matrix_lower.csv"和"../data/output/test_matrix_lower.csv"到最大短语长度(max_phrase_length)
     :return: 
     """
-    # 1. 补齐 "../data/output/train_matrix.csv"
-    with open("../data/output/train_matrix.csv") as f:
-        X = train_df["Phrase_vec"]  # <Series>. shape: (156060,)
-        X = np.array([json.loads(vec) for vec in X])
+    # TODO: 这儿感觉不要用pandas，否则内存压力太大？ pandas是一次性把所有的数据都读到内存中吗?感觉是, 待验证
+    # 1. 补齐 "../data/output/train_matrix_lower.csv"
+    f1 = open("../data/output/train_matrix_lower_pad.csv", "wb")
+    with open("../data/output/train_matrix_lower.csv") as f:
+        f1.write(f.readline().encode("utf-8"))
+        for line in f:
+            line = line.strip()
+            matrix, label = line.split("\t")
+            matrix = json.loads(matrix)  # matrix: list of list
+            # matrix  = np.array([json.loads(vec) for vec in matrix])
+            length = len(matrix)
+            assert length <= max_phrase_length
+            matrix = np.pad(matrix, pad_width=((0, max_phrase_length-length), (0, 0)), mode="constant",
+                            constant_values=-1)  # 参数中的matrix类型为list of list, 返回值的matrix是ndarray类型
+            f1.write(f"{json.dumps(matrix.tolist())}\t{label}\n".encode("utf-8"))
+    f1.close()
+
+    # 2. 补齐 "../data/output/test_matrix_lower.csv"
+    f1 = open("../data/output/test_matrix_lower_pad.csv", "wb")
+    with open("../data/output/test_matrix_lower.csv") as f:
+        f1.write(f.readline().encode("utf-8"))
+        for line in f:
+            line = line.strip()
+            matrix, label = line.split("\t")
+            matrix = json.loads(matrix)  # matrix: list of list
+            # matrix  = np.array([json.loads(vec) for vec in matrix])
+            length = len(matrix)
+            assert length <= max_phrase_length
+            matrix = np.pad(matrix, pad_width=((0, max_phrase_length-length), (0, 0)), mode="constant",
+                            constant_values=-1)  # 参数中的matrix类型为list of list, 返回值的matrix是ndarray类型
+            f1.write(f"{json.dumps(matrix.tolist())}\t{label}\n".encode("utf-8"))
+    f1.close()
 
 def gen_train_val_data(train_df):
     """
@@ -290,6 +321,7 @@ if __name__ == "__main__":
     rm_stopwords(train_df, test_df)
     """
 
+    """
     train_path = "../data/output/train_wo_sw.csv"  # "train_wo_sw_uniq.csv"
     test_path = "../data/output/test_wo_sw.csv"
     train_df, test_df = fetch_data_df(train_path=train_path, test_path=test_path, sep="\t")
@@ -301,6 +333,8 @@ if __name__ == "__main__":
         train_df.to_csv("../data/output/train_wo_sw_uniq.csv", index=False, sep="\t")
     # data2vec(train_df, test_df)
     max_phrase_length = data2matrix(train_df, test_df)
+    """
+    fill_train_test_matrix(5)
 
     # train_df = pd.read_csv("../data/output/train_vector_100.csv", sep="\t")  # (156060, 2)
     # X_train, X_val, y_train, y_val = gen_train_val_data(train_df)

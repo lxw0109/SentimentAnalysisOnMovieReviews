@@ -164,8 +164,8 @@ if __name__ == "__main__":
           "y_train.shape:{4}\ny_val.shape:{5}\n".format(X_train.shape, X_val.shape, X_test.shape,
                                                          X_test_id.shape, y_train.shape, y_val.shape))
 
-    # model_train_val(X_train, X_val, y_train, y_val)
-    plot_hist()
+    model_train_val(X_train, X_val, y_train, y_val)
+    # plot_hist()
 
     """
     model = load_model("../data/output/models/v4.0_best_model_106_1.01.hdf5")   # DEBUG
