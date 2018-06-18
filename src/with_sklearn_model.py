@@ -10,6 +10,8 @@ import pandas as pd
 from sklearn import linear_model
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import StratifiedKFold
 
 # from src.preprocessing import gen_train_val_test_data
 from preprocessing import gen_train_val_test_data
@@ -59,7 +61,15 @@ def train_val_predict(X_train, X_val, X_test, X_test_id, y_train, y_val):
     y_val_pred = model.predict(X_val)
     print("classification_report:", classification_report(y_val, y_val_pred))  # y_true, y_pred
     print("Mean accuracy score:", accuracy_score(y_val, y_val_pred))
+    cv = StratifiedKFold(n_splits=5, shuffle=True)
+    scores = cross_val_score(model, X_train, y_train, cv=5)
+    print(f"Accuracy: {scores.mean():.2f}(+/- {scores.std() * 2:.2f})")
     print("model.score:", model.score(X_val, y_val))
+    """
+    Mean accuracy score: 0.502193657635468
+    Accuracy: 0.48(+/- 0.01)
+    model.score: 0.5023283559113301
+    """
 
     predicted = model.predict(X_test)
     # print(predicted)
