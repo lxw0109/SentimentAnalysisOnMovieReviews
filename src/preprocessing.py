@@ -136,10 +136,10 @@ def data2vec(train_df, test_df):
     # Reference: [在python中如何用word2vec来计算句子的相似度](https://vimsky.com/article/3677.html)
     senti_series = train_df["Sentiment"]  # <Series>. shape: (156060,)
     phrase_series = train_df["Phrase"]  # <Series>. shape: (156060,)
-    f = open("../data/output/train_vector_uniq.csv", "wb")
+    f = open("../data/output/train_vector_lower_uniq.csv", "wb")
     f.write("Phrase_vec\tSentiment\n".encode("utf-8"))  # NOTE:不能以逗号分割,因为数据中有逗号分割的词,如数字中的分隔符
     for ind, phrase in enumerate(phrase_series):
-        phrase = str(phrase)
+        phrase = str(phrase).lower()
         phrase_vec = np.zeros((vec_size,), dtype="float32")
         word_count = 0
         word_list = phrase.split()
@@ -151,13 +151,14 @@ def data2vec(train_df, test_df):
             phrase_vec = np.divide(phrase_vec, word_count)
         f.write("{0}\t{1}\n".format(json.dumps(phrase_vec.tolist()), senti_series.iloc[ind]).encode("utf-8"))
     f.close()
+    return  # DEBUG
 
     phrase_id_series = test_df["PhraseId"]  # <Series>. shape: (156060,)
     phrase_series = test_df["Phrase"]  # <Series>. shape: (156060,)
-    f = open("../data/output/test_vector.csv", "wb")
+    f = open("../data/output/test_vector_lower.csv", "wb")
     f.write("PhraseId\tPhrase_vec\n".encode("utf-8"))  # NOTE: 不能以逗号分割，因为数据中有逗号分割的词，例如数字中的分隔符
     for ind, phrase in enumerate(phrase_series):
-        phrase = str(phrase)
+        phrase = str(phrase).lower()
         phrase_vec = np.zeros((vec_size,), dtype="float32")
         word_count = 0
         word_list = phrase.split()
@@ -189,8 +190,10 @@ def data2matrix(train_df, test_df):
     end_time = time.time()
     print("Loading Model Time Cost: {}".format(end_time - start_time))
     model_word_set = set(model.index2word)
-    with open("../data/output/word_set.json") as f:
-        json.dump(list(model_word_set), f)
+    """
+    with open("../data/output/word_set.json", "wb") as f:
+        f.write(json.dumps(list(model_word_set)).encode("utf-8"))
+    """
     # vec_size = model.vector_size
     # model.index2entity == model.index2word: True
     # print(model.similarity("good", "bad"))  # 0.7190051208276236
@@ -199,7 +202,7 @@ def data2matrix(train_df, test_df):
     # Reference: [在python中如何用word2vec来计算句子的相似度](https://vimsky.com/article/3677.html)
     senti_series = train_df["Sentiment"]  # <Series>. shape: (156060,)
     phrase_series = train_df["Phrase"]  # <Series>. shape: (156060,)
-    f = open("../data/output/train_matrix_lower.csv", "wb")
+    f = open("../data/output/train_matrix_lower_uniq.csv", "wb")
     f.write("Phrase_vec\tSentiment\n".encode("utf-8"))  # NOTE:不能以逗号分割,因为数据中有逗号分割的词,如数字中的分隔符
     max_phrase_length = 0
     for ind, phrase in enumerate(phrase_series):
@@ -215,6 +218,7 @@ def data2matrix(train_df, test_df):
             max_phrase_length = phrase_length
         f.write("{0}\t{1}\n".format(json.dumps(phrase_matrix), senti_series.iloc[ind]).encode("utf-8"))
     f.close()
+    return   # DEBUG
 
     phrase_id_series = test_df["PhraseId"]  # <Series>. shape: (156060,)
     phrase_series = test_df["Phrase"]  # <Series>. shape: (156060,)
@@ -267,12 +271,12 @@ def gen_train_val_test_data():
     """
     :return: X_train, X_val, X_test, X_test_id, y_train, y_val
     """
-    train_df = pd.read_csv("../data/output/train_vector.csv", sep="\t")  # (156060, 2)
+    train_df = pd.read_csv("../data/output/train_vector_lower.csv", sep="\t")  # (156060, 2)
     # train_df此处不需要去重, 去重的工作在生成word vector之前就完成了
 
     X_train, X_val, y_train, y_val = gen_train_val_data(train_df)
 
-    test_df = pd.read_csv("../data/output/test_vector.csv", sep="\t")  # (156060, 2)
+    test_df = pd.read_csv("../data/output/test_vector_lower.csv", sep="\t")  # (156060, 2)
     X_test = test_df["Phrase_vec"]  # <Series>. shape: (,)
     X_test = np.array([json.loads(vec) for vec in X_test])
     X_test_id = test_df["PhraseId"]  # <Series>. shape: (,)
@@ -290,7 +294,7 @@ if __name__ == "__main__":
     rm_stopwords(train_df, test_df)
     """
 
-    train_path = "../data/output/train_wo_sw.csv"  # "train_wo_sw_uniq.csv"
+    train_path = "../data/output/train_wo_sw_uniq.csv"  # DEBUG
     test_path = "../data/output/test_wo_sw.csv"
     train_df, test_df = fetch_data_df(train_path=train_path, test_path=test_path, sep="\t")
     train_uniq_flag = False  # True. 只运行一次即可. 以后都设置为False
@@ -299,8 +303,9 @@ if __name__ == "__main__":
         train_df.drop_duplicates(inplace=True)
         print("After drop_duplicates(), train_df.shape:", train_df.shape)  # (106507, 2)
         train_df.to_csv("../data/output/train_wo_sw_uniq.csv", index=False, sep="\t")
-    # data2vec(train_df, test_df)
-    max_phrase_length = data2matrix(train_df, test_df)
+
+    data2vec(train_df, test_df)
+    # max_phrase_length = data2matrix(train_df, test_df)
 
     # train_df = pd.read_csv("../data/output/train_vector_100.csv", sep="\t")  # (156060, 2)
     # X_train, X_val, y_train, y_val = gen_train_val_data(train_df)
