@@ -27,18 +27,18 @@ def train_val_predict(X_train, X_val, X_test, X_test_id, y_train, y_val):
     # 2. [NO]NB: 也是著名的机器学习算法, 该方法的任务是还原训练样本数据的分布密度, 其在多分类中有很好的效果
     from sklearn import naive_bayes
     model = naive_bayes.GaussianNB()  # 高斯贝叶斯
-    '''
 
-    # 3. [OK_but_too_slow]KNN:
+    # 3. [OK]KNN:
     from sklearn.neighbors import KNeighborsClassifier
     model = KNeighborsClassifier()  # 非常慢，感觉没法用(跑了半个多小时没反应)
-
     '''
+
     # 4. [OK]决策树: 分类与回归树(Classification and Regression Trees, CART)算法常用于特征含有类别信息
     # 的分类或者回归问题，这种方法非常适用于多分类情况
     from sklearn.tree import DecisionTreeClassifier
     model = DecisionTreeClassifier()
 
+    '''
     # 5. [NO]SVM: SVM是非常流行的机器学习算法，主要用于分类问题，
     # 如同逻辑回归问题，它可以使用一对多的方法进行多类别的分类
     from sklearn.svm import SVC
@@ -65,7 +65,8 @@ def train_val_predict(X_train, X_val, X_test, X_test_id, y_train, y_val):
     """
     predicted = pd.Series(predicted, name="Sentiment")
     submission = pd.concat([X_test_id, predicted], axis=1)
-    submission.to_csv("../data/output/lstm_submission_sk_knn.csv", index=False)
+    # submission.to_csv("../data/output/submissions/sk_knn_submission.csv", index=False)
+    submission.to_csv("../data/output/submissions/sk_dt_submission.csv", index=False)
 
 
 if __name__ == "__main__":
