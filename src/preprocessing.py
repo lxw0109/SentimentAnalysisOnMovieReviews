@@ -210,12 +210,14 @@ def data2matrix(train_df, test_df):
     # 2. 生成Phrase vector
     senti_series = train_df["Sentiment"]  # <Series>. shape: (156060,)
     phrase_series = train_df["Phrase"]  # <Series>. shape: (156060,)
-    f = open("../data/output/train_matrix_lower.csv", "wb")
+    # f = open("../data/output/train_matrix_lower.csv", "wb")
+    f = open("../data/output/train_matrix.csv", "wb")
     f.write("Phrase_vec\tSentiment\n".encode("utf-8"))  # NOTE:不能以逗号分割,因为数据中有逗号分割的词,如数字中的分隔符
     max_phrase_length = 0
     empty_statistics_train = {}
     for ind, phrase in enumerate(phrase_series):
-        phrase = str(phrase).lower()
+        # phrase = str(phrase).lower()
+        phrase = str(phrase)
         phrase_matrix = []  # list of list.
         phrase_length = 0
         word_list = phrase.split()
@@ -242,11 +244,13 @@ def data2matrix(train_df, test_df):
 
     phrase_id_series = test_df["PhraseId"]  # <Series>. shape: (156060,)
     phrase_series = test_df["Phrase"]  # <Series>. shape: (156060,)
-    f = open("../data/output/test_matrix_lower.csv", "wb")
+    # f = open("../data/output/test_matrix_lower.csv", "wb")
+    f = open("../data/output/test_matrix.csv", "wb")
     empty_matrix_list_test = list()  # list of empty matrix, identified by phrase_id. 
     f.write("PhraseId\tPhrase_vec\n".encode("utf-8"))  # NOTE: 不能以逗号分割，因为数据中有逗号分割的词，例如数字中的分隔符
     for ind, phrase in enumerate(phrase_series):
-        phrase = str(phrase).lower()
+        # phrase = str(phrase).lower()
+        phrase = str(phrase)
         phrase_matrix = []  # list of list.
         phrase_length = 0
         word_list = phrase.split()
@@ -278,12 +282,16 @@ def data2matrix(train_df, test_df):
 def fill_train_test_matrix(max_phrase_length):
     """
     补齐"../data/output/train_matrix_lower.csv"和"../data/output/test_matrix_lower.csv"到最大短语长度(max_phrase_length)
+    or
+    补齐"../data/output/train_matrix.csv"和"../data/output/test_matrix.csv"到最大短语长度(max_phrase_length)
     :return: 
     """
     # TODO: 这儿感觉不要用pandas，否则内存压力太大？ pandas是一次性把所有的数据都读到内存中吗?感觉是, 待验证
-    # 1. 补齐 "../data/output/train_matrix_lower.csv"
-    f1 = open("../data/output/train_matrix_lower_pad.csv", "wb")
-    with open("../data/output/train_matrix_lower.csv") as f:
+    # 1. 补齐 "../data/output/train_matrix_lower.csv" or "../data/output/train_matrix.csv"
+    # f1 = open("../data/output/train_matrix_lower_pad.csv", "wb")
+    f1 = open("../data/output/train_matrix_pad.csv", "wb")
+    # with open("../data/output/train_matrix_lower.csv") as f:
+    with open("../data/output/train_matrix.csv") as f:
         f1.write(f.readline().encode("utf-8"))
         for line in f:
             line = line.strip()
@@ -299,9 +307,11 @@ def fill_train_test_matrix(max_phrase_length):
             f1.write(f"{json.dumps(matrix.tolist())}\t{label}\n".encode("utf-8"))
     f1.close()
 
-    # 2. 补齐 "../data/output/test_matrix_lower.csv"
-    f1 = open("../data/output/test_matrix_lower_pad.csv", "wb")
-    with open("../data/output/test_matrix_lower.csv") as f:
+    # 2. 补齐 "../data/output/test_matrix_lower.csv" or "../data/output/test_matrix.csv"
+    # f1 = open("../data/output/test_matrix_lower_pad.csv", "wb")
+    f1 = open("../data/output/test_matrix_pad.csv", "wb")
+    # with open("../data/output/test_matrix_lower.csv") as f:
+    with open("../data/output/test_matrix.csv") as f:
         f1.write(f.readline().encode("utf-8"))
         for line in f:
             line = line.strip()
@@ -355,7 +365,8 @@ def gen_train_val_test_matrix():
     """
     start_time = time.time()
 
-    train_df = pd.read_csv("../data/output/train_matrix_lower_pad.csv", sep="\t")  # (156060, 2)
+    # train_df = pd.read_csv("../data/output/train_matrix_lower_pad.csv", sep="\t")  # (156060, 2)
+    train_df = pd.read_csv("../data/output/train_matrix_pad.csv", sep="\t")  # (156060, 2)
 
     y = train_df["Sentiment"]  # <Series>. shape: (156060,)
     y = np_utils.to_categorical(y)  # <ndarray of ndarray>. shape: (156060, 5)
@@ -369,7 +380,8 @@ def gen_train_val_test_matrix():
     # X_train: <ndarray of ndarray>.
     # y_train: <ndarray of ndarray>.
 
-    test_df = pd.read_csv("../data/output/test_matrix_lower_pad.csv", sep="\t")  # (156060, 2)
+    # test_df = pd.read_csv("../data/output/test_matrix_lower_pad.csv", sep="\t")  # (156060, 2)
+    test_df = pd.read_csv("../data/output/test_matrix_pad.csv", sep="\t")  # (156060, 2)
     X_test = test_df["Phrase_vec"]  # <Series>.
     X_test = np.array([json.loads(mat) for mat in X_test])  # shape: (63954, 24, 300)
     X_test_id = test_df["PhraseId"]  # <Series>.
@@ -389,7 +401,6 @@ if __name__ == "__main__":
     rm_stopwords(train_df, test_df)
     """
 
-    """
     train_path = "../data/output/train_wo_sw.csv"  # DEBUG: "train_wo_sw_uniq.csv"
     test_path = "../data/output/test_wo_sw.csv"
     train_df, test_df = fetch_data_df(train_path=train_path, test_path=test_path, sep="\t")
@@ -400,10 +411,10 @@ if __name__ == "__main__":
         print("After drop_duplicates(), train_df.shape:", train_df.shape)  # (106507, 2)
         train_df.to_csv("../data/output/train_wo_sw_uniq.csv", index=False, sep="\t")
     """
+    """
 
     # data2vec(train_df, test_df)
-    # data2matrix(train_df, test_df)
-    # fill_train_test_matrix(24)
+    data2matrix(train_df, test_df)
 
     # train_df = pd.read_csv("../data/output/train_vector_100.csv", sep="\t")  # (156060, 2)
     # X_train, X_val, y_train, y_val = gen_train_val_data(train_df)

@@ -177,7 +177,6 @@ def gen_submission():
 
 
 if __name__ == "__main__":
-    """
     # For reproducibility
     np.random.seed(2)
     tf.set_random_seed(2)
@@ -191,10 +190,9 @@ if __name__ == "__main__":
     # model_train_val(X_train, X_val, y_train, y_val)
     # plot_hist()
     """
+    """
 
-    """
-    model = load_model("../data/output/models/matrix_v1.0_best_model_22_0.88.hdf5")   # DEBUG
+    model = load_model("../data/output/models/matrix_v5.0_best_model_19_0.88.hdf5")   # DEBUG
     model_predict(model, X_test, X_test_id, X_val, y_val)
-    """
 
     gen_submission()
