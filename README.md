@@ -14,7 +14,8 @@ Kaggle竞赛题目[Sentiment Analysis on Movie Reviews](https://www.kaggle.com/c
 | LSTM **v4.1** | **0.58642** | 106 | 1024 | 与v2.0区别: 增加batch_size、更改随机数种子 |
 | LSTM **v5.0** | **0.62886** | 19 | 1024 | 与v4.1区别: 1. 更改Phrase词向量的表示形式(使用矩阵，而不是所有词向量的平均值) |
 | LSTM **v5.1** | **0.62831** | 22 | 1024 | 与v4.1区别: 1. 更改Phrase词向量的表示形式(使用矩阵，而不是所有词向量的平均值) 2. 所有单词转换为小写取词向量 |
-| Random Forest |  | / | / | sklearn |
+| Random Forest v1.0 | 0.43836 | / | / | sklearn, 使用所有词向量的平均值表示句子 |
+| Random Forest v2.0 | 0.41821 | / | / | sklearn, 使用矩阵表示句子 |
 
 ## 2. 关于预处理
 拿到数据首先应该做的就是预处理, 包括一些数据统计工作, 例如**统计样本的数据分布情况(label是否分布均匀)**, **查看样本数据缺失值的情况(并填补缺失值)**, **数据扩充(data augmentation)**, **特征提取**, **特征选择**, **标准化&归一化**, **降维**, **to_categorical**, **train_test_split**, **reshape**等
