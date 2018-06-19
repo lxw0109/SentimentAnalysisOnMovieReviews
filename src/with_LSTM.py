@@ -163,6 +163,12 @@ def model_predict(model, X_test, X_test_id, X_val, y_val):
     print("Loss: {0:.2f}, Model Accuracy: {1:.2f}%".format(loss, accuracy))
 
 
+def gen_submission():
+    submission_df = pd.read_csv("../data/output/submissions/lstm_submission_matrix.csv", index_col=0)
+    with open("../data/output/submissions/empty_matrix_list_test.txt") as f:
+
+
+
 if __name__ == "__main__":
     # For reproducibility
     np.random.seed(2)
@@ -177,7 +183,7 @@ if __name__ == "__main__":
     # model_train_val(X_train, X_val, y_train, y_val)
     # plot_hist()
 
-    model = load_model("../data/output/models/best_model_22_0.88.hdf5")   # DEBUG
+    model = load_model("../data/output/models/matrix_v1.0_best_model_22_0.88.hdf5")   # DEBUG
     model_predict(model, X_test, X_test_id, X_val, y_val)
     """
     """
