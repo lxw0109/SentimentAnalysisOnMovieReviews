@@ -320,6 +320,30 @@ def gen_train_val_test_data():
     return X_train, X_val, X_test, X_test_id, y_train, y_val
 
 
+def gen_train_val_test_matrix():
+    """
+    :return: X_train, X_val, X_test, X_test_id, y_train, y_val
+    """
+    train_df = pd.read_csv("../data/output/train_matrix_lower_pad.csv", sep="\t")  # (156060, 2)
+
+    y = train_df["Sentiment"]  # <Series>. shape: (156060,)
+    y = np_utils.to_categorical(y)  # <ndarray of ndarray>. shape: (156060, 5)
+    assert y.shape[1] == 5
+
+    X = train_df["Phrase_vec"]  # <Series>.
+    X = np.array([json.loads(mat) for mat in X])  # shape: (156060, max_phrase_length, vector_size)
+    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.333, shuffle=True, random_state=1)
+    # X_train: <ndarray of ndarray>.
+    # y_train: <ndarray of ndarray>.
+
+    test_df = pd.read_csv("../data/output/test_matrix_lower_pad.csv", sep="\t")  # (156060, 2)
+    X_test = test_df["Phrase_vec"]  # <Series>. shape: (,)
+    X_test = np.array([json.loads(mat) for mat in X_test])
+    X_test_id = test_df["PhraseId"]  # <Series>. shape: (,)
+    # X_test_id = np.array(X_test_id)   # Keep X_test_id in <Series>.
+    return X_train, X_val, X_test, X_test_id, y_train, y_val
+
+
 if __name__ == "__main__":
     """
     # 1. 去除phrase中的stopwords, 生成文件"../data/output/train_wo_sw.csv" 和 "test_wo_sw.csv"
@@ -343,9 +367,11 @@ if __name__ == "__main__":
         train_df.to_csv("../data/output/train_wo_sw_uniq.csv", index=False, sep="\t")
 
     # data2vec(train_df, test_df)
-    data2matrix(train_df, test_df)
+    # data2matrix(train_df, test_df)
+    # fill_train_test_matrix(5)
 
     # train_df = pd.read_csv("../data/output/train_vector_100.csv", sep="\t")  # (156060, 2)
     # X_train, X_val, y_train, y_val = gen_train_val_data(train_df)
 
     # gen_train_val_test_data()
+    gen_train_val_test_matrix()
