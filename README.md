@@ -12,6 +12,7 @@ Kaggle竞赛题目[Sentiment Analysis on Movie Reviews](https://www.kaggle.com/c
 | **LSTM v3.1** | 0.57120 | 142 | 1024 | 与v2.0区别: 去除了训练集中的重复样本、增加batch_size |
 | **LSTM v4.0** | 0.51789 | 5(初始化时落到局部极小值了?) | 1024 | 与v2.0区别: 增加batch_size |
 | **LSTM v4.1** | **0.58642** | 106 | 1024 | 与v2.0区别: 增加batch_size、更改随机数种子 |
+| **LSTM v5.0** | **0.** | 22 | 1024 | 与v4.1区别: 更改Phrase词向量的表示形式(使用矩阵，而不是所有词向量的平均值), 训练速度明显提升，只需半小时左右，v1.0-v4.1需要8小时左右 |
 | **Random Forest** |  | / | / | sklearn |
 
 ## 2. 关于预处理
@@ -35,11 +36,14 @@ Kaggle竞赛题目[Sentiment Analysis on Movie Reviews](https://www.kaggle.com/c
  + 训练集和验证集上的loss在超过100次迭代后下降的速度非常慢, 模型基本已训练完成.
  + 本项目去除训练集重复样本后，针对batch_size取16/32/64/128/256/512/1024都进行了测试，准确率提升得比未去除训练集重复样本的速度都要慢(第一次迭代的准确率就低了4个百分点左右. Don't know why? 可能是数据集的原因?)
 5. v4.1(v4.0略): 与v2.0区别 增加batch_size、更改随机数种子, 对应的loss和accuracy曲线如下图所示:  
- ![docs/images/[with dup]ep106_bs1024_v4.1.png](docs/images/[with dup]ep106_bs1024_v4.1.png)  
- ![docs/images/[wo_dup]ep142_bs1024_v3.1.png](docs/images/[wo_dup]ep142_bs1024_v3.1.png)  
+ ![docs/images/[with_dup]ep106_bs1024_v4.1.png](docs/images/[with_dup]ep106_bs1024_v4.1.png)  
  从图中我们可以看出:  
  + 与v3.1的accuracy曲线对比, 可以看出去除训练集中的重复样本的训练准确率提升的非常慢(v3.1 acc曲线)，在迭代50次后仍低于55%，而未去除重复训练样本的训练(v4.1)准确率提升的要快得多，迭代50次后，训练集和验证集上的准确率都已经明显超过了55%
  + 对比v3.1和v4.1训练得到的模型，在测试集上的准确率得分(Kaggle给出的评分)，可以看出训练集中重复样本没有去重的准确略比去重后的准确率要高(Don't know why? 数据集的原因?)
+6. v5.0: 与v4.1区别 更改Phrase词向量的表示形式(使用矩阵，而不是所有词向量的平均值), 对应的loss和accuracy曲线如下图所示:  
+ ![docs/images/matrix_with_dup_ep22_bs1024.png](docs/images/matrix_with_dup_ep22_bs1024.png)  
+ **训练速度明显提升**，只需半小时左右，而v1.0-v4.1需要8小时左右(**十几倍的速度提升**)
+ 
  
 ## TODO
 1. 所有字母全部转为小写字母，再获取词向量
