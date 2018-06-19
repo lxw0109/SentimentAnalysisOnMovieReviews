@@ -202,7 +202,7 @@ def data2matrix(train_df, test_df):
     # Reference: [在python中如何用word2vec来计算句子的相似度](https://vimsky.com/article/3677.html)
     senti_series = train_df["Sentiment"]  # <Series>. shape: (156060,)
     phrase_series = train_df["Phrase"]  # <Series>. shape: (156060,)
-    f = open("../data/output/train_matrix_lower_uniq.csv", "wb")
+    f = open("../data/output/train_matrix_lower.csv", "wb")
     f.write("Phrase_vec\tSentiment\n".encode("utf-8"))  # NOTE:不能以逗号分割,因为数据中有逗号分割的词,如数字中的分隔符
     max_phrase_length = 0
     for ind, phrase in enumerate(phrase_series):
@@ -216,9 +216,9 @@ def data2matrix(train_df, test_df):
                 phrase_matrix.append(model[word].tolist())  # type(model[word]): ndarray
         if phrase_length > max_phrase_length:
             max_phrase_length = phrase_length
-        f.write("{0}\t{1}\n".format(json.dumps(phrase_matrix), senti_series.iloc[ind]).encode("utf-8"))
+        if phrase_length > 0:
+            f.write("{0}\t{1}\n".format(json.dumps(phrase_matrix), senti_series.iloc[ind]).encode("utf-8"))
     f.close()
-    return   # DEBUG
 
     phrase_id_series = test_df["PhraseId"]  # <Series>. shape: (156060,)
     phrase_series = test_df["Phrase"]  # <Series>. shape: (156060,)
@@ -235,20 +235,56 @@ def data2matrix(train_df, test_df):
                 phrase_matrix.append(model[word].tolist())  # type(model[word]): ndarray
         if phrase_length > max_phrase_length:
             max_phrase_length = phrase_length
-        f.write("{0}\t{1}\n".format(phrase_id_series.iloc[ind], json.dumps(phrase_matrix)).encode("utf-8"))
+        if phrase_length > 0:
+            f.write("{0}\t{1}\n".format(phrase_id_series.iloc[ind], json.dumps(phrase_matrix)).encode("utf-8"))
+        else:
+            print("--NO: empty matrix in test.-------------------------------------------------------------------------------")
+            f.write("".encode("utf-8"))  # TODO: 这里统计训练集中label最多的填入?
+
     f.close()
-    return max_phrase_length
+
+    fill_train_test_matrix(max_phrase_length)
 
 
-def fill_train_test_matrix():
+def fill_train_test_matrix(max_phrase_length):
     """
-    补齐"../data/output/train_matrix.csv"和"../data/output/test_matrix.csv"到最大短语长度(max_phrase_length)
+    补齐"../data/output/train_matrix_lower.csv"和"../data/output/test_matrix_lower.csv"到最大短语长度(max_phrase_length)
     :return: 
     """
-    # 1. 补齐 "../data/output/train_matrix.csv"
-    with open("../data/output/train_matrix.csv") as f:
-        X = train_df["Phrase_vec"]  # <Series>. shape: (156060,)
-        X = np.array([json.loads(vec) for vec in X])
+    # TODO: 这儿感觉不要用pandas，否则内存压力太大？ pandas是一次性把所有的数据都读到内存中吗?感觉是, 待验证
+    # 1. 补齐 "../data/output/train_matrix_lower.csv"
+    f1 = open("../data/output/train_matrix_lower_pad.csv", "wb")
+    with open("../data/output/train_matrix_lower.csv") as f:
+        f1.write(f.readline().encode("utf-8"))
+        for line in f:
+            line = line.strip()
+            matrix, label = line.split("\t")
+            matrix = json.loads(matrix)  # matrix: list of list
+            # print(f"type(matrix): {type(matrix)}, type(matrix[0]): {type(matrix[0])}")
+            # matrix  = np.array([json.loads(vec) for vec in matrix])
+            length = len(matrix)
+            assert length <= max_phrase_length
+            print(f"max_phrase_length: {max_phrase_length}, to be filled: {max_phrase_length-length}")
+            matrix = np.pad(matrix, pad_width=((0, max_phrase_length-length), (0, 0)), mode="constant",
+                            constant_values=-1)  # 参数中的matrix类型为list of list, 返回值的matrix是ndarray类型
+            f1.write(f"{json.dumps(matrix.tolist())}\t{label}\n".encode("utf-8"))
+    f1.close()
+
+    # 2. 补齐 "../data/output/test_matrix_lower.csv"
+    f1 = open("../data/output/test_matrix_lower_pad.csv", "wb")
+    with open("../data/output/test_matrix_lower.csv") as f:
+        f1.write(f.readline().encode("utf-8"))
+        for line in f:
+            line = line.strip()
+            phrase_id, matrix = line.split("\t")
+            matrix = json.loads(matrix)  # matrix: list of list
+            # matrix  = np.array([json.loads(vec) for vec in matrix])
+            length = len(matrix)
+            assert length <= max_phrase_length
+            matrix = np.pad(matrix, pad_width=((0, max_phrase_length-length), (0, 0)), mode="constant",
+                            constant_values=-1)  # 参数中的matrix类型为list of list, 返回值的matrix是ndarray类型
+            f1.write(f"{json.dumps(matrix.tolist())}\t{label}\n".encode("utf-8"))
+    f1.close()
 
 def gen_train_val_data(train_df):
     """
@@ -294,7 +330,9 @@ if __name__ == "__main__":
     rm_stopwords(train_df, test_df)
     """
 
-    train_path = "../data/output/train_wo_sw_uniq.csv"  # DEBUG
+    """
+    """
+    train_path = "../data/output/train_wo_sw.csv"  # DEBUG: "train_wo_sw_uniq.csv"
     test_path = "../data/output/test_wo_sw.csv"
     train_df, test_df = fetch_data_df(train_path=train_path, test_path=test_path, sep="\t")
     train_uniq_flag = False  # True. 只运行一次即可. 以后都设置为False
@@ -304,8 +342,8 @@ if __name__ == "__main__":
         print("After drop_duplicates(), train_df.shape:", train_df.shape)  # (106507, 2)
         train_df.to_csv("../data/output/train_wo_sw_uniq.csv", index=False, sep="\t")
 
-    data2vec(train_df, test_df)
-    # max_phrase_length = data2matrix(train_df, test_df)
+    # data2vec(train_df, test_df)
+    data2matrix(train_df, test_df)
 
     # train_df = pd.read_csv("../data/output/train_vector_100.csv", sep="\t")  # (156060, 2)
     # X_train, X_val, y_train, y_val = gen_train_val_data(train_df)

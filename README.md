@@ -11,7 +11,8 @@ Kaggle竞赛题目[Sentiment Analysis on Movie Reviews](https://www.kaggle.com/c
 | **LSTM v3.0** | 0.56919 | 66 | 512 | 与v2.0区别: 去除了训练集中的重复样本 |
 | **LSTM v3.1** | 0.57120 | 142 | 1024 | 与v2.0区别: 去除了训练集中的重复样本、增加batch_size |
 | **LSTM v4.0** | 0.51789 | 5(初始化时落到局部极小值了?) | 1024 | 与v2.0区别: 增加batch_size |
-| **LSTM v4.1** | 0.58642 | 106 | 1024 | 与v2.0区别: 增加batch_size、更改随机数种子 |
+| **LSTM v4.1** | **0.58642** | 106 | 1024 | 与v2.0区别: 增加batch_size、更改随机数种子 |
+| **Random Forest** |  | / | / | sklearn |
 
 ## 2. 关于预处理
 拿到数据首先应该做的就是预处理, 包括一些数据统计工作, 例如**统计样本的数据分布情况(label是否分布均匀)**, **查看样本数据缺失值的情况(并填补缺失值)**, **数据扩充(data augmentation)**, **特征提取**, **特征选择**, **标准化&归一化**, **降维**, **to_categorical**, **train_test_split**, **reshape**等
