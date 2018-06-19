@@ -5,14 +5,14 @@ Kaggle竞赛题目[Sentiment Analysis on Movie Reviews](https://www.kaggle.com/c
 以下各种实现方法的得分是针对相应代码中的参数和网络结构设计的情况下的得分, **此处不表示各种算法本身的性能和效果对比**
 
 | 实现方法 | Score | 迭代次数(采用early stopping)近似值 | batch_size | 说明 |
-| :--- | :---: | :---: | :---: | :--- |
+| :------ | :---: | :---: | :---: | :------ |
 | **LSTM v1.0** | 0.58319 | 50(从下面的loss-acc曲线可以看出并没有收敛, underfitting) | 512 | 采用word2vec([GoogleNews-vectors-negative300.bin](https://github.com/3Top/word2vec-api)), 没有考虑PhraseId和SentenceId, 使用词向量的均值作为句子的向量, 训练集中重复样本没有去重 |
 | **LSTM v2.0** | 0.58399 | 69 | 512 | 与v1.0区别: 增加EarlyStopping、 ReduceLROnPlateau、ModelCheckpoint |
 | **LSTM v3.0** | 0.56919 | 66 | 512 | 与v2.0区别: 去除了训练集中的重复样本 |
 | **LSTM v3.1** | 0.57120 | 142 | 1024 | 与v2.0区别: 去除了训练集中的重复样本、增加batch_size |
 | **LSTM v4.0** | 0.51789 | 5(初始化时落到局部极小值了?) | 1024 | 与v2.0区别: 增加batch_size |
 | **LSTM v4.1** | **0.58642** | 106 | 1024 | 与v2.0区别: 增加batch_size、更改随机数种子 |
-| **LSTM v5.0** | **0.** | 22 | 1024 | 与v4.1区别: 更改Phrase词向量的表示形式(使用矩阵，而不是所有词向量的平均值), 训练速度明显提升，只需半小时左右，v1.0-v4.1需要8小时左右 |
+| **LSTM v5.0** | **0.** | 22 | 1024 | 与v4.1区别: 更改Phrase词向量的表示形式(使用矩阵，而不是所有词向量的平均值), 训练速度明显提升(只需28分钟左右，v1.0-v4.1需要8小时左右) |
 | **Random Forest** |  | / | / | sklearn |
 
 ## 2. 关于预处理
