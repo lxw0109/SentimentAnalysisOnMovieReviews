@@ -18,12 +18,13 @@ from keras.layers import Dense
 from keras.layers import Dropout
 from keras.layers import LSTM
 from keras.layers import Masking
-# from keras.models import load_model
+from keras.models import load_model
 # from keras.optimizers import Adam
-# from keras.utils import np_utils
+from keras.utils import np_utils
 
 # from src.preprocessing import gen_train_val_test_data
 from preprocessing import gen_train_val_test_data
+from preprocessing import gen_train_val_test_matrix
 
 
 def model_build(input_shape, num_classes=5):
@@ -79,6 +80,7 @@ def model_build(input_shape, num_classes=5):
 
 
 def model_train_val(X_train, X_val, y_train, y_val):
+    print(len(X_train.shape))
     if len(X_train.shape) == 2:  # 2: vector.  3: matrix.
         X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1], 1))
         X_val = np.reshape(X_val, (X_val.shape[0], X_val.shape[1], 1))
@@ -129,10 +131,13 @@ def plot_hist():
 
 def model_predict(model, X_test, X_test_id, X_val, y_val):
     # Generate predicted result.
-    X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 1))
-    X_val = np.reshape(X_val, (X_val.shape[0], X_val.shape[1], 1))
+    print(len(X_test.shape))
+    if len(X_train.shape) == 2:  # 2: vector.  3: matrix.
+        X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 1))
+        X_val = np.reshape(X_val, (X_val.shape[0], X_val.shape[1], 1))
     print("X_test.shape:{0}\nX_val.shape:{1}\n".format(X_test.shape, X_val.shape))
     predicted = model.predict(X_test)  # predicted.shape: (, )
+    print(f"predicted.shape: {predicted.shape}")
     """
     # print(predicted[:10])  # OK
     [[ 0.17622797  0.17507555  0.27694944  0.19135155  0.18039554]
@@ -149,7 +154,7 @@ def model_predict(model, X_test, X_test_id, X_val, y_val):
     """
     predicted = pd.Series(predicted, name="Sentiment")
     submission = pd.concat([X_test_id, predicted], axis=1)
-    submission.to_csv("../data/output/lstm_submission.csv", index=False)
+    submission.to_csv("../data/output/submissions/lstm_submission_matrix.csv", index=False)
 
     # Model Evaluation
     print("model.metrics:{0}, model.metrics_names:{1}".format(model.metrics, model.metrics_names))
@@ -163,16 +168,17 @@ if __name__ == "__main__":
     np.random.seed(2)
     tf.set_random_seed(2)
 
-    X_train, X_val, X_test, X_test_id, y_train, y_val = gen_train_val_test_data()
+    # X_train, X_val, X_test, X_test_id, y_train, y_val = gen_train_val_test_data()  # vector
+    X_train, X_val, X_test, X_test_id, y_train, y_val = gen_train_val_test_matrix()  # matrix
     print("X_train.shape:{0}\nX_val.shape:{1}\nX_test.shape:{2}\nX_test_id.shape:{3}\n"
           "y_train.shape:{4}\ny_val.shape:{5}\n".format(X_train.shape, X_val.shape, X_test.shape,
                                                          X_test_id.shape, y_train.shape, y_val.shape))
 
-    model_train_val(X_train, X_val, y_train, y_val)
+    # model_train_val(X_train, X_val, y_train, y_val)
     # plot_hist()
 
-    """
-    model = load_model("../data/output/models/v4.0_best_model_106_1.01.hdf5")   # DEBUG
+    model = load_model("../data/output/models/best_model_22_0.88.hdf5")   # DEBUG
     model_predict(model, X_test, X_test_id, X_val, y_val)
+    """
     """
 

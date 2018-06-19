@@ -136,7 +136,7 @@ def data2vec(train_df, test_df):
     # Reference: [在python中如何用word2vec来计算句子的相似度](https://vimsky.com/article/3677.html)
     senti_series = train_df["Sentiment"]  # <Series>. shape: (156060,)
     phrase_series = train_df["Phrase"]  # <Series>. shape: (156060,)
-    f = open("../data/output/train_vector_lower_uniq.csv", "wb")
+    f = open("../data/output/train_vector_lower.csv", "wb")
     f.write("Phrase_vec\tSentiment\n".encode("utf-8"))  # NOTE:不能以逗号分割,因为数据中有逗号分割的词,如数字中的分隔符
     for ind, phrase in enumerate(phrase_series):
         phrase = str(phrase).lower()
@@ -151,7 +151,6 @@ def data2vec(train_df, test_df):
             phrase_vec = np.divide(phrase_vec, word_count)
         f.write("{0}\t{1}\n".format(json.dumps(phrase_vec.tolist()), senti_series.iloc[ind]).encode("utf-8"))
     f.close()
-    return  # DEBUG
 
     phrase_id_series = test_df["PhraseId"]  # <Series>. shape: (156060,)
     phrase_series = test_df["Phrase"]  # <Series>. shape: (156060,)
@@ -199,12 +198,12 @@ def data2matrix(train_df, test_df):
     # print(model.similarity("good", "bad"))  # 0.7190051208276236
 
     # 2. 生成Phrase vector
-    # Reference: [在python中如何用word2vec来计算句子的相似度](https://vimsky.com/article/3677.html)
     senti_series = train_df["Sentiment"]  # <Series>. shape: (156060,)
     phrase_series = train_df["Phrase"]  # <Series>. shape: (156060,)
     f = open("../data/output/train_matrix_lower.csv", "wb")
     f.write("Phrase_vec\tSentiment\n".encode("utf-8"))  # NOTE:不能以逗号分割,因为数据中有逗号分割的词,如数字中的分隔符
     max_phrase_length = 0
+    empty_statistics_train = {}
     for ind, phrase in enumerate(phrase_series):
         phrase = str(phrase).lower()
         phrase_matrix = []  # list of list.
@@ -217,12 +216,24 @@ def data2matrix(train_df, test_df):
         if phrase_length > max_phrase_length:
             max_phrase_length = phrase_length
         if phrase_length > 0:
-            f.write("{0}\t{1}\n".format(json.dumps(phrase_matrix), senti_series.iloc[ind]).encode("utf-8"))
+            f.write(f"{json.dumps(phrase_matrix)}\t{senti_series.iloc[ind]}\n".encode("utf-8"))
+        else:  # phrase_length == 0
+            if senti_series.iloc[ind] in empty_statistics_train:
+                empty_statistics_train[senti_series.iloc[ind]] += 1
+            else:
+                empty_statistics_train[senti_series.iloc[ind]] = 1
     f.close()
+    print(f"empty_statistics_train: {empty_statistics_train}")
+    empty_statistics_train = list(empty_statistics_train.items())
+    empty_statistics_train = sorted(empty_statistics_train, key=lambda x: x[1], reverse=True)
+    print(f"empty_statistics_train: {empty_statistics_train}")
+    most_senti = empty_statistics_train[0][0]
+    print(f"most_senti: {most_senti}")
 
     phrase_id_series = test_df["PhraseId"]  # <Series>. shape: (156060,)
     phrase_series = test_df["Phrase"]  # <Series>. shape: (156060,)
     f = open("../data/output/test_matrix_lower.csv", "wb")
+    empty_matrix_list_test = list()  # list of empty matrix, identified by phrase_id. 
     f.write("PhraseId\tPhrase_vec\n".encode("utf-8"))  # NOTE: 不能以逗号分割，因为数据中有逗号分割的词，例如数字中的分隔符
     for ind, phrase in enumerate(phrase_series):
         phrase = str(phrase).lower()
@@ -236,14 +247,22 @@ def data2matrix(train_df, test_df):
         if phrase_length > max_phrase_length:
             max_phrase_length = phrase_length
         if phrase_length > 0:
-            f.write("{0}\t{1}\n".format(phrase_id_series.iloc[ind], json.dumps(phrase_matrix)).encode("utf-8"))
+            f.write(f"{phrase_id_series.iloc[ind]}\t{json.dumps(phrase_matrix)}\n".encode("utf-8"))
         else:
-            print("--NO: empty matrix in test.-------------------------------------------------------------------------------")
-            f.write("".encode("utf-8"))  # TODO: 这里统计训练集中label最多的填入?
+            # print("---NO: empty matrix in test.---")
+            print(phrase_id_series.iloc[ind])
+            empty_matrix_list_test.append(phrase_id_series.iloc[ind])
+            # f.write(f"{phrase_id_series.iloc[ind]}\t{most_senti}".encode("utf-8"))  # 这里统计训练集中label(senti)最多的填入(不用在这里填入, 直接在最后的submission.csv文件中填)
 
     f.close()
 
+    print(f"max_phrase_length: {max_phrase_length}")
+    # max_phrase_length = 24  # DEBUG
     fill_train_test_matrix(max_phrase_length)
+    # 把空矩阵的phrase_id列表写入文件，将来往submission中填
+    with open("../data/output/submissions/empty_matrix_list_test.txt", "wb") as f:
+        f.write(f"{most_senti}\n".encode("utf-8"))
+        f.write(json.dumps(empty_matrix_list_test).encode("utf-8"))
 
 
 def fill_train_test_matrix(max_phrase_length):
@@ -264,7 +283,7 @@ def fill_train_test_matrix(max_phrase_length):
             # matrix  = np.array([json.loads(vec) for vec in matrix])
             length = len(matrix)
             assert length <= max_phrase_length
-            print(f"max_phrase_length: {max_phrase_length}, to be filled: {max_phrase_length-length}")
+            # print(f"max_phrase_length: {max_phrase_length}, to be filled: {max_phrase_length-length}")
             matrix = np.pad(matrix, pad_width=((0, max_phrase_length-length), (0, 0)), mode="constant",
                             constant_values=-1)  # 参数中的matrix类型为list of list, 返回值的matrix是ndarray类型
             f1.write(f"{json.dumps(matrix.tolist())}\t{label}\n".encode("utf-8"))
@@ -283,7 +302,7 @@ def fill_train_test_matrix(max_phrase_length):
             assert length <= max_phrase_length
             matrix = np.pad(matrix, pad_width=((0, max_phrase_length-length), (0, 0)), mode="constant",
                             constant_values=-1)  # 参数中的matrix类型为list of list, 返回值的matrix是ndarray类型
-            f1.write(f"{json.dumps(matrix.tolist())}\t{label}\n".encode("utf-8"))
+            f1.write(f"{phrase_id}\t{json.dumps(matrix.tolist())}\n".encode("utf-8"))
     f1.close()
 
 def gen_train_val_data(train_df):
@@ -303,7 +322,7 @@ def gen_train_val_data(train_df):
     return X_train, X_val, y_train, y_val
 
 
-def gen_train_val_test_data():
+def gen_train_val_test_data():  # only for vector, not for matrix. IGNORE THIS METHOD.
     """
     :return: X_train, X_val, X_test, X_test_id, y_train, y_val
     """
@@ -324,6 +343,8 @@ def gen_train_val_test_matrix():
     """
     :return: X_train, X_val, X_test, X_test_id, y_train, y_val
     """
+    start_time = time.time()
+
     train_df = pd.read_csv("../data/output/train_matrix_lower_pad.csv", sep="\t")  # (156060, 2)
 
     y = train_df["Sentiment"]  # <Series>. shape: (156060,)
@@ -331,16 +352,20 @@ def gen_train_val_test_matrix():
     assert y.shape[1] == 5
 
     X = train_df["Phrase_vec"]  # <Series>.
-    X = np.array([json.loads(mat) for mat in X])  # shape: (156060, max_phrase_length, vector_size)
+    X = np.array([json.loads(mat) for mat in X])  # shape: (156060, max_phrase_length, vector_size). (150929, 24, 300)
+
+    print(f"X.shape: {X.shape}")
     X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.333, shuffle=True, random_state=1)
     # X_train: <ndarray of ndarray>.
     # y_train: <ndarray of ndarray>.
 
     test_df = pd.read_csv("../data/output/test_matrix_lower_pad.csv", sep="\t")  # (156060, 2)
-    X_test = test_df["Phrase_vec"]  # <Series>. shape: (,)
-    X_test = np.array([json.loads(mat) for mat in X_test])
-    X_test_id = test_df["PhraseId"]  # <Series>. shape: (,)
+    X_test = test_df["Phrase_vec"]  # <Series>.
+    X_test = np.array([json.loads(mat) for mat in X_test])  # shape: (63954, 24, 300)
+    X_test_id = test_df["PhraseId"]  # <Series>.
     # X_test_id = np.array(X_test_id)   # Keep X_test_id in <Series>.
+    end_time = time.time()
+    print(f"Preparing data costs: {end_time - start_time:.2f}s")
     return X_train, X_val, X_test, X_test_id, y_train, y_val
 
 
@@ -354,8 +379,6 @@ if __name__ == "__main__":
     rm_stopwords(train_df, test_df)
     """
 
-    """
-    """
     train_path = "../data/output/train_wo_sw.csv"  # DEBUG: "train_wo_sw_uniq.csv"
     test_path = "../data/output/test_wo_sw.csv"
     train_df, test_df = fetch_data_df(train_path=train_path, test_path=test_path, sep="\t")
@@ -365,13 +388,15 @@ if __name__ == "__main__":
         train_df.drop_duplicates(inplace=True)
         print("After drop_duplicates(), train_df.shape:", train_df.shape)  # (106507, 2)
         train_df.to_csv("../data/output/train_wo_sw_uniq.csv", index=False, sep="\t")
+    """
+    """
 
     # data2vec(train_df, test_df)
-    # data2matrix(train_df, test_df)
-    # fill_train_test_matrix(5)
+    data2matrix(train_df, test_df)
+    # fill_train_test_matrix(24)
 
     # train_df = pd.read_csv("../data/output/train_vector_100.csv", sep="\t")  # (156060, 2)
     # X_train, X_val, y_train, y_val = gen_train_val_data(train_df)
 
     # gen_train_val_test_data()
-    gen_train_val_test_matrix()
+    # gen_train_val_test_matrix()
