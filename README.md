@@ -6,15 +6,15 @@ Kaggle竞赛题目[Sentiment Analysis on Movie Reviews](https://www.kaggle.com/c
 
 | 实现方法 | Score | 迭代次数(采用early stopping)近似值 | batch_size | 说明 |
 | :------ | :---: | :---: | :---: | :------ |
-| **LSTM v1.0** | 0.58319 | 50(从下面的loss-acc曲线可以看出并没有收敛, underfitting) | 512 | 采用word2vec([GoogleNews-vectors-negative300.bin](https://github.com/3Top/word2vec-api)), 没有考虑PhraseId和SentenceId, 使用词向量的均值作为句子的向量, 训练集中重复样本没有去重 |
-| **LSTM v2.0** | 0.58399 | 69 | 512 | 与v1.0区别: 增加EarlyStopping、 ReduceLROnPlateau、ModelCheckpoint |
-| **LSTM v3.0** | 0.56919 | 66 | 512 | 与v2.0区别: 去除了训练集中的重复样本 |
-| **LSTM v3.1** | 0.57120 | 142 | 1024 | 与v2.0区别: 去除了训练集中的重复样本、增加batch_size |
-| **LSTM v4.0** | 0.51789 | 5(初始化时落到局部极小值了?) | 1024 | 与v2.0区别: 增加batch_size |
-| **LSTM v4.1** | **0.58642** | 106 | 1024 | 与v2.0区别: 增加batch_size、更改随机数种子 |
-| **LSTM v5.0** | **0.** |  | 1024 | 与v4.1区别: 1. 更改Phrase词向量的表示形式(使用矩阵，而不是所有词向量的平均值) |
-| **LSTM v5.1** | **0.62831** | 22 | 1024 | 与v4.1区别: 1. 更改Phrase词向量的表示形式(使用矩阵，而不是所有词向量的平均值) 2. 所有单词转换为小写取词向量 |
-| **Random Forest** |  | / | / | sklearn |
+| LSTM v1.0 | 0.58319 | 50(从下面的loss-acc曲线可以看出并没有收敛, underfitting) | 512 | 采用word2vec([GoogleNews-vectors-negative300.bin](https://github.com/3Top/word2vec-api)), 没有考虑PhraseId和SentenceId, 使用词向量的均值作为句子的向量, 训练集中重复样本没有去重 |
+| LSTM v2.0 | 0.58399 | 69 | 512 | 与v1.0区别: 增加EarlyStopping、 ReduceLROnPlateau、ModelCheckpoint |
+| LSTM v3.0 | 0.56919 | 66 | 512 | 与v2.0区别: 去除了训练集中的重复样本 |
+| LSTM v3.1 | 0.57120 | 142 | 1024 | 与v2.0区别: 去除了训练集中的重复样本、增加batch_size |
+| LSTM v4.0 | 0.51789 | 5(初始化时落到局部极小值了?) | 1024 | 与v2.0区别: 增加batch_size |
+| LSTM **v4.1** | **0.58642** | 106 | 1024 | 与v2.0区别: 增加batch_size、更改随机数种子 |
+| LSTM **v5.0** | **0.62886** | 19 | 1024 | 与v4.1区别: 1. 更改Phrase词向量的表示形式(使用矩阵，而不是所有词向量的平均值) |
+| LSTM **v5.1** | **0.62831** | 22 | 1024 | 与v4.1区别: 1. 更改Phrase词向量的表示形式(使用矩阵，而不是所有词向量的平均值) 2. 所有单词转换为小写取词向量 |
+| Random Forest |  | / | / | sklearn |
 
 ## 2. 关于预处理
 拿到数据首先应该做的就是预处理, 包括一些数据统计工作, 例如**统计样本的数据分布情况(label是否分布均匀)**, **查看样本数据缺失值的情况(并填补缺失值)**, **数据扩充(data augmentation)**, **特征提取**, **特征选择**, **标准化&归一化**, **降维**, **to_categorical**, **train_test_split**, **reshape**等
@@ -42,14 +42,11 @@ Kaggle竞赛题目[Sentiment Analysis on Movie Reviews](https://www.kaggle.com/c
  + 与v3.1的accuracy曲线对比, 可以看出去除训练集中的重复样本的训练准确率提升的非常慢(v3.1 acc曲线)，在迭代50次后仍低于55%，而未去除重复训练样本的训练(v4.1)准确率提升的要快得多，迭代50次后，训练集和验证集上的准确率都已经明显超过了55%
  + 对比v3.1和v4.1训练得到的模型，在测试集上的准确率得分(Kaggle给出的评分)，可以看出训练集中重复样本没有去重的准确略比去重后的准确率要高(Don't know why? 数据集的原因?)
 6. v5.0: 与v4.1区别 更改Phrase词向量的表示形式(使用矩阵，而不是所有词向量的平均值), 对应的loss和accuracy曲线如下图所示:  
-
-7. v5.1: 与v4.1区别 更改Phrase词向量的表示形式(使用矩阵，而不是所有词向量的平均值)且所有单词转换为小写取词向量, 对应的loss和accuracy曲线如下图所示:  
- ![docs/images/matrix_with_dup_ep22_bs1024.png](docs/images/matrix_with_dup_ep22_bs1024.png)  
+ ![docs/images/matrix_with_dup_ep19_bs1024_v5.0.png](docs/images/matrix_with_dup_ep19_bs1024_v5.0.png)  
  使用矩阵表示句子, 而不是使用句子中所有单词词向量的平均值表示句子后, 我们可以看出:
  + 模型的**准确率有了显著地提升**
  + 模型的**训练速度和收敛速度明显提升**，只需28分钟左右，而v1.0-v4.1需要8小时左右(**十几倍的速度提升**); v5.1只需22次迭代即达到收敛, 而v2.0-v3.0需要近70次迭代，v4.1需要100多次迭代才能收敛
 
- 
- 
-## TODO
-1. 所有字母全部转为小写字母，再获取词向量
+7. v5.1: 与v4.1区别 更改Phrase词向量的表示形式(使用矩阵，而不是所有词向量的平均值)且所有单词转换为小写取词向量, 对应的loss和accuracy曲线如下图所示:  
+ ![docs/images/matrix_with_dup_ep22_bs1024_v5.1.png](docs/images/matrix_with_dup_ep22_bs1024_v5.1.png)  
+ 与v5.0相比，准确率没有提升
