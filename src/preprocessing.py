@@ -18,6 +18,18 @@ from keras.utils import np_utils
 from sklearn.model_selection import train_test_split
 
 
+class MyEncoder(json.JSONEncoder):  # TO avoid: "TypeError: Object of type 'int64' is not JSON serializable"
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        else:
+            return super(MyEncoder, self).default(obj)
+
+
 def fetch_data_df(train_path, test_path, sep="\t"):
     """
     :param train_path: path of train data.
@@ -169,8 +181,6 @@ def data2vec(train_df, test_df):
             phrase_vec = np.divide(phrase_vec, word_count)
         f.write("{0}\t{1}\n".format(phrase_id_series.iloc[ind], json.dumps(phrase_vec.tolist())).encode("utf-8"))
     f.close()
-    """
-    """
 
 
 def data2matrix(train_df, test_df):
@@ -250,7 +260,7 @@ def data2matrix(train_df, test_df):
             f.write(f"{phrase_id_series.iloc[ind]}\t{json.dumps(phrase_matrix)}\n".encode("utf-8"))
         else:
             # print("---NO: empty matrix in test.---")
-            print(phrase_id_series.iloc[ind])
+            # print(phrase_id_series.iloc[ind])
             empty_matrix_list_test.append(phrase_id_series.iloc[ind])
             # f.write(f"{phrase_id_series.iloc[ind]}\t{most_senti}".encode("utf-8"))  # 这里统计训练集中label(senti)最多的填入(不用在这里填入, 直接在最后的submission.csv文件中填)
 
@@ -262,7 +272,7 @@ def data2matrix(train_df, test_df):
     # 把空矩阵的phrase_id列表写入文件，将来往submission中填
     with open("../data/output/submissions/empty_matrix_list_test.txt", "wb") as f:
         f.write(f"{most_senti}\n".encode("utf-8"))
-        f.write(json.dumps(empty_matrix_list_test).encode("utf-8"))
+        f.write(json.dumps(empty_matrix_list_test, cls=MyEncoder).encode("utf-8"))  # "cls=MyEncoder", TO avoid: "TypeError: Object of type 'int64' is not JSON serializable"
 
 
 def fill_train_test_matrix(max_phrase_length):
@@ -365,7 +375,7 @@ def gen_train_val_test_matrix():
     X_test_id = test_df["PhraseId"]  # <Series>.
     # X_test_id = np.array(X_test_id)   # Keep X_test_id in <Series>.
     end_time = time.time()
-    print(f"Preparing data costs: {end_time - start_time:.2f}s")
+    print(f"Preparing data costs: {end_time - start_time:.2f}s\n")
     return X_train, X_val, X_test, X_test_id, y_train, y_val
 
 
@@ -379,6 +389,7 @@ if __name__ == "__main__":
     rm_stopwords(train_df, test_df)
     """
 
+    """
     train_path = "../data/output/train_wo_sw.csv"  # DEBUG: "train_wo_sw_uniq.csv"
     test_path = "../data/output/test_wo_sw.csv"
     train_df, test_df = fetch_data_df(train_path=train_path, test_path=test_path, sep="\t")
@@ -389,14 +400,13 @@ if __name__ == "__main__":
         print("After drop_duplicates(), train_df.shape:", train_df.shape)  # (106507, 2)
         train_df.to_csv("../data/output/train_wo_sw_uniq.csv", index=False, sep="\t")
     """
-    """
 
     # data2vec(train_df, test_df)
-    data2matrix(train_df, test_df)
+    # data2matrix(train_df, test_df)
     # fill_train_test_matrix(24)
 
     # train_df = pd.read_csv("../data/output/train_vector_100.csv", sep="\t")  # (156060, 2)
     # X_train, X_val, y_train, y_val = gen_train_val_data(train_df)
 
     # gen_train_val_test_data()
-    # gen_train_val_test_matrix()
+    gen_train_val_test_matrix()

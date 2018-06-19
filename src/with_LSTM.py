@@ -4,6 +4,7 @@
 # Author: lxw
 # Date: 6/6/18 5:26 PM
 
+import json
 import numpy as np
 import pandas as pd
 import pickle
@@ -163,7 +164,20 @@ def model_predict(model, X_test, X_test_id, X_val, y_val):
     print("Loss: {0:.2f}, Model Accuracy: {1:.2f}%".format(loss, accuracy))
 
 
+def gen_submission():
+    submission_df = pd.read_csv("../data/output/submissions/lstm_submission_matrix.csv", index_col=0)
+    with open("../data/output/submissions/empty_matrix_list_test.txt") as f:
+        most_senti = f.readline().strip()
+        phrase_id_list = json.loads(f.readline().strip())  # <list of int>. length: 2338
+    empty_ids_df = pd.DataFrame(most_senti, index=phrase_id_list, columns=["Sentiment"])
+    submission_df = submission_df.append(empty_ids_df)
+    submission_df.index.name = "PhraseId"
+    submission_df.sort_index(inplace=True)
+    submission_df.to_csv("../data/output/submissions/lstm_submission_matrix_fill.csv")
+
+
 if __name__ == "__main__":
+    """
     # For reproducibility
     np.random.seed(2)
     tf.set_random_seed(2)
@@ -175,10 +189,12 @@ if __name__ == "__main__":
                                                          X_test_id.shape, y_train.shape, y_val.shape))
 
     # model_train_val(X_train, X_val, y_train, y_val)
-    plot_hist()
+    # plot_hist()
+    """
 
     """
-    model = load_model("../data/output/models/best_model_22_0.88.hdf5")   # DEBUG
+    model = load_model("../data/output/models/matrix_v1.0_best_model_22_0.88.hdf5")   # DEBUG
     model_predict(model, X_test, X_test_id, X_val, y_val)
     """
 
+    gen_submission()
