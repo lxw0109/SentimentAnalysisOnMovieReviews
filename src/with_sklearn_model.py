@@ -14,10 +14,15 @@ from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import StratifiedKFold
 
 # from src.preprocessing import gen_train_val_test_data
-from preprocessing import gen_train_val_test_data
+# from preprocessing import gen_train_val_test_data
+from preprocessing import gen_train_val_test_matrix
 
 
 def train_val_predict(X_train, X_val, X_test, X_test_id, y_train, y_val):
+    X_train = X_train.reshape(X_train.shape[0], -1)
+    X_val = X_val.reshape(X_val.shape[0], -1)
+    X_test = X_test.reshape(X_test.shape[0], -1)
+    print(f"X_train.shape: {X_train.shape}, X_test.shape: {X_test.shape}, X_val.shape:{X_val.shape}")
     '''
     # 1. [NO]LR: LR算法的优点是可以给出数据所在类别的概率
     model = linear_model.LogisticRegression(C=1e5)
@@ -79,11 +84,12 @@ def train_val_predict(X_train, X_val, X_test, X_test_id, y_train, y_val):
     predicted = pd.Series(predicted, name="Sentiment")
     submission = pd.concat([X_test_id, predicted], axis=1)
     # submission.to_csv("../data/output/submissions/sk_knn_submission.csv", index=False)
-    submission.to_csv("../data/output/submissions/sk_rf_submission.csv", index=False)
+    submission.to_csv("../data/output/submissions/sk_rf_submission_matrix.csv", index=False)
 
 
 if __name__ == "__main__":
-    X_train, X_val, X_test, X_test_id, y_train, y_val = gen_train_val_test_data()
+    # X_train, X_val, X_test, X_test_id, y_train, y_val = gen_train_val_test_data()
+    X_train, X_val, X_test, X_test_id, y_train, y_val = gen_train_val_test_matrix()
     print("X_train.shape:{0}\nX_val.shape:{1}\nX_test.shape:{2}\nX_test_id.shape:{3}\ny_train.shape:{4}\ny_val.shape:{5}\n".\
         format(X_train.shape, X_val.shape, X_test.shape, X_test_id.shape, y_train.shape, y_val.shape))
     train_val_predict(X_train, X_val, X_test, X_test_id, y_train, y_val)

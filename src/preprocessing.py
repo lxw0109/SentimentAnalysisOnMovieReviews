@@ -271,7 +271,6 @@ def data2matrix(train_df, test_df):
     f.close()
 
     print(f"max_phrase_length: {max_phrase_length}")
-    # max_phrase_length = 24  # DEBUG
     fill_train_test_matrix(max_phrase_length)
     # 把空矩阵的phrase_id列表写入文件，将来往submission中填
     with open("../data/output/submissions/empty_matrix_list_test.txt", "wb") as f:
@@ -401,6 +400,7 @@ if __name__ == "__main__":
     rm_stopwords(train_df, test_df)
     """
 
+    """
     train_path = "../data/output/train_wo_sw.csv"  # DEBUG: "train_wo_sw_uniq.csv"
     test_path = "../data/output/test_wo_sw.csv"
     train_df, test_df = fetch_data_df(train_path=train_path, test_path=test_path, sep="\t")
@@ -411,10 +411,9 @@ if __name__ == "__main__":
         print("After drop_duplicates(), train_df.shape:", train_df.shape)  # (106507, 2)
         train_df.to_csv("../data/output/train_wo_sw_uniq.csv", index=False, sep="\t")
     """
-    """
 
     # data2vec(train_df, test_df)
-    data2matrix(train_df, test_df)
+    # data2matrix(train_df, test_df)
 
     # train_df = pd.read_csv("../data/output/train_vector_100.csv", sep="\t")  # (156060, 2)
     # X_train, X_val, y_train, y_val = gen_train_val_data(train_df)
