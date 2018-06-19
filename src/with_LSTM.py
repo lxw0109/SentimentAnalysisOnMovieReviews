@@ -165,7 +165,8 @@ def model_predict(model, X_test, X_test_id, X_val, y_val):
 
 
 def gen_submission():
-    submission_df = pd.read_csv("../data/output/submissions/lstm_submission_matrix.csv", index_col=0)
+    # submission_df = pd.read_csv("../data/output/submissions/lstm_submission_matrix.csv", index_col=0)
+    submission_df = pd.read_csv("../data/output/submissions/sk_rf_submission_matrix.csv", index_col=0)
     with open("../data/output/submissions/empty_matrix_list_test.txt") as f:
         most_senti = f.readline().strip()
         phrase_id_list = json.loads(f.readline().strip())  # <list of int>. length: 2338
@@ -173,10 +174,12 @@ def gen_submission():
     submission_df = submission_df.append(empty_ids_df)
     submission_df.index.name = "PhraseId"
     submission_df.sort_index(inplace=True)
-    submission_df.to_csv("../data/output/submissions/lstm_submission_matrix_fill.csv")
+    # submission_df.to_csv("../data/output/submissions/lstm_submission_matrix_fill.csv")
+    submission_df.to_csv("../data/output/submissions/sk_rf_submission_matrix_fill.csv")
 
 
 if __name__ == "__main__":
+    """
     # For reproducibility
     np.random.seed(2)
     tf.set_random_seed(2)
@@ -189,10 +192,9 @@ if __name__ == "__main__":
 
     # model_train_val(X_train, X_val, y_train, y_val)
     # plot_hist()
-    """
-    """
 
     model = load_model("../data/output/models/matrix_v5.0_best_model_19_0.88.hdf5")   # DEBUG
     model_predict(model, X_test, X_test_id, X_val, y_val)
+    """
 
     gen_submission()
