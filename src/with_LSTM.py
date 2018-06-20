@@ -133,7 +133,7 @@ def plot_hist():
 def model_predict(model, X_test, X_test_id, X_val, y_val):
     # Generate predicted result.
     print(len(X_test.shape))
-    if len(X_train.shape) == 2:  # 2: vector.  3: matrix.
+    if len(X_test.shape) == 2:  # 2: vector.  3: matrix.
         X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 1))
         X_val = np.reshape(X_val, (X_val.shape[0], X_val.shape[1], 1))
     print("X_test.shape:{0}\nX_val.shape:{1}\n".format(X_test.shape, X_val.shape))
