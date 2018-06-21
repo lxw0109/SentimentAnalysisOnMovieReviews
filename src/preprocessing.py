@@ -400,9 +400,10 @@ if __name__ == "__main__":
     rm_stopwords(train_df, test_df)
     """
 
-    """
-    train_path = "../data/output/train_wo_sw.csv"  # DEBUG: "train_wo_sw_uniq.csv"
-    test_path = "../data/output/test_wo_sw.csv"
+    # train_path = "../data/output/train_wo_sw.csv"  # DEBUG: "train_wo_sw_uniq.csv"
+    # test_path = "../data/output/test_wo_sw.csv"
+    train_path = "../data/input/train.tsv"
+    test_path = "../data/input/test.tsv"
     train_df, test_df = fetch_data_df(train_path=train_path, test_path=test_path, sep="\t")
     train_uniq_flag = False  # True. 只运行一次即可. 以后都设置为False
     if train_uniq_flag:
@@ -411,12 +412,13 @@ if __name__ == "__main__":
         print("After drop_duplicates(), train_df.shape:", train_df.shape)  # (106507, 2)
         train_df.to_csv("../data/output/train_wo_sw_uniq.csv", index=False, sep="\t")
     """
+    """
 
     # data2vec(train_df, test_df)
-    # data2matrix(train_df, test_df)
+    data2matrix(train_df, test_df)
 
     # train_df = pd.read_csv("../data/output/train_vector_100.csv", sep="\t")  # (156060, 2)
     # X_train, X_val, y_train, y_val = gen_train_val_data(train_df)
 
     # gen_train_val_test_data()
-    gen_train_val_test_matrix()
+    # gen_train_val_test_matrix()
