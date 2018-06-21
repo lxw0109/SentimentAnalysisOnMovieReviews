@@ -1,7 +1,7 @@
 # SentimentAnalysisOnMovieReviews
 Kaggle竞赛题目[Sentiment Analysis on Movie Reviews](https://www.kaggle.com/c/sentiment-analysis-on-movie-reviews)多种算法实现
 
-## 1. 不同实现方法的得分
+## 1. 实现方法总结
 以下各种实现方法的得分是针对相应代码中的参数和网络结构设计的情况下的得分, **此处不表示各种算法本身的性能和效果对比**
 
 | 实现方法 | Score | 迭代次数(采用early stopping)近似值 | batch_size | 说明 |
@@ -12,15 +12,16 @@ Kaggle竞赛题目[Sentiment Analysis on Movie Reviews](https://www.kaggle.com/c
 | LSTM v3.1 | 0.57120 | 142 | 1024 | 与v2.0区别: 去除了训练集中的重复样本、增加batch_size |
 | LSTM v4.0 | 0.51789 | 5(初始化时落到局部极小值了?) | 1024 | 与v2.0区别: 增加batch_size |
 | LSTM **v4.1** | **0.58642** | 106 | 1024 | 与v2.0区别: 增加batch_size、更改随机数种子 |
-| LSTM **v5.0** | **0.62886** | 19 | 1024 | 与v4.1区别: 1. 更改Phrase词向量的表示形式(使用矩阵，而不是所有词向量的平均值) |
-| LSTM **v5.1** | **0.62831** | 22 | 1024 | 与v4.1区别: 1. 更改Phrase词向量的表示形式(使用矩阵，而不是所有词向量的平均值) 2. 所有单词转换为小写取词向量 |
+| LSTM **v5.0** | **0.62886** | 19 | 1024 | 与v4.1区别: 1.更改Phrase词向量的表示形式(使用矩阵，而不是所有词向量的平均值) |
+| LSTM **v5.1** | 0.62831 | 22 | 1024 | 与v4.1区别: 1.更改Phrase词向量的表示形式(使用矩阵，而不是所有词向量的平均值) 2.所有单词转换为小写取词向量 |
+| LSTM **v6.0** | **0.65136** | 20 | 512 | 与v2.0区别: 1.更改Phrase词向量的表示形式(使用矩阵，而不是所有词向量的平均值) 2.不去除停用词 |
 | Random Forest v1.0 | 0.43836 | / | / | sklearn, 使用所有词向量的平均值表示句子 |
 | Random Forest v2.0 | 0.41821 | / | / | sklearn, 使用矩阵表示句子 |
 
 ## 2. 关于预处理
 拿到数据首先应该做的就是预处理, 包括一些数据统计工作, 例如**统计样本的数据分布情况(label是否分布均匀)**, **查看样本数据缺失值的情况(并填补缺失值)**, **数据扩充(data augmentation)**, **特征提取**, **特征选择**, **标准化&归一化**, **降维**, **to_categorical**, **train_test_split**, **reshape**等
 
-## 3. LSTM实现方法结果绘制
+## 3. 实现方法结果绘制
 1. v1.0: 迭代次数(epochs)取50时的loss和accuracy曲线如下图所示:  
  ![docs/images/[with_dup]ep50_bs512_v1.0.png](docs/images/[with_dup]ep50_bs512_v1.0.png)  
  从图中我们可以看出训练集和验证集上的accuracy都还在提高, loss都还在下降, 说明模型参数还可以继续迭代优化, 以提升模型预测效果
@@ -47,7 +48,9 @@ Kaggle竞赛题目[Sentiment Analysis on Movie Reviews](https://www.kaggle.com/c
  使用矩阵表示句子, 而不是使用句子中所有单词词向量的平均值表示句子后, 我们可以看出:
  + 模型的**准确率有了显著地提升**
  + 模型的**训练速度和收敛速度明显提升**，只需28分钟左右，而v1.0-v4.1需要8小时左右(**十几倍的速度提升**); v5.1只需22次迭代即达到收敛, 而v2.0-v3.0需要近70次迭代，v4.1需要100多次迭代才能收敛
-
 7. v5.1: 与v4.1区别 更改Phrase词向量的表示形式(使用矩阵，而不是所有词向量的平均值)且所有单词转换为小写取词向量, 对应的loss和accuracy曲线如下图所示:  
  ![docs/images/matrix_with_dup_ep22_bs1024_v5.1.png](docs/images/matrix_with_dup_ep22_bs1024_v5.1.png)  
+ 与v5.0相比，准确率没有提升
+8. v6.0: 与v2.0区别 更改Phrase词向量的表示形式(使用矩阵，而不是所有词向量的平均值)且**不去除停用词**, 对应的loss和accuracy曲线如下图所示:  
+ ![docs/images/matrix_with_dup_ep20_bs512_v6.0.png](docs/images/matrix_with_dup_ep20_bs512_v6.0.png)  
  与v5.0相比，准确率没有提升
