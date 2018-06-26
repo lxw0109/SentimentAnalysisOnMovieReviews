@@ -5,10 +5,8 @@
 # Date: 5/14/18 10:53 PM
 
 import json
-# import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-# import seaborn as sns
 import time
 
 from gensim.models import KeyedVectors
@@ -48,18 +46,21 @@ def fetch_data_df(train_path, test_path, sep="\t"):
 
 
 def data_analysis(train_df, test_df):
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+
     sns.set(style="white", context="notebook", palette="deep")
 
-    Y_train = train_df["Sentiment"]
+    y_train = train_df["Sentiment"]
     X_train = train_df.drop(labels=["Sentiment"], axis=1)
 
     # free some space
     del train_df
 
     # 1. 查看样本数据分布情况(各个label数据是否均匀分布)
-    sns.countplot(Y_train)
+    sns.countplot(y_train)
     plt.show()
-    print(Y_train.value_counts())  # TODO: Is this an imbalanced dataset?
+    print(y_train.value_counts())  # TODO: Is this an imbalanced dataset?
     """
     2    79582
     3    32927
@@ -71,8 +72,13 @@ def data_analysis(train_df, test_df):
     # 2. Check for null and missing values
     # print(pd.DataFrame([1, 2, 3, np.nan, 1, 2, 3, -1, 3, 2, 1, 3, 2, np.nan, 3, 2, 1]).isnull().any())
     # print(pd.DataFrame([1, 2, 3, np.nan, 1, 2, 3, -1, 3, 2, 1, 3, 2, np.nan, 3, 2, 1]).isnull().any().describe())
+    # 2.1 Method 1
     print(X_train.isnull().any().describe())  # no misssing values.
     print(test_df.isnull().any().describe())  # no misssing values.
+
+    # 2.2 Method 2
+    print(X_train.info())
+
     # fillna() if missing values occur.
 
 
@@ -391,15 +397,16 @@ def gen_train_val_test_matrix():
 
 
 if __name__ == "__main__":
-    """
-    # 1. 去除phrase中的stopwords, 生成文件"../data/output/train_wo_sw.csv" 和 "test_wo_sw.csv"
     origin_train_path = "../data/input/train.tsv"
     origin_test_path = "../data/input/test.tsv"
     train_df, test_df = fetch_data_df(train_path= origin_train_path, test_path=origin_test_path, sep="\t")
-    # data_analysis(train_df, test_df)
-    rm_stopwords(train_df, test_df)
-    """
 
+    # 1. 去除phrase中的stopwords, 生成文件"../data/output/train_wo_sw.csv" 和 "test_wo_sw.csv"
+    # rm_stopwords(train_df, test_df)
+
+    data_analysis(train_df, test_df)
+
+    """
     # train_path = "../data/output/train_wo_sw.csv"  # DEBUG: "train_wo_sw_uniq.csv"
     # test_path = "../data/output/test_wo_sw.csv"
     train_path = "../data/input/train.tsv"
@@ -411,8 +418,6 @@ if __name__ == "__main__":
         train_df.drop_duplicates(inplace=True)
         print("After drop_duplicates(), train_df.shape:", train_df.shape)  # (106507, 2)
         train_df.to_csv("../data/output/train_wo_sw_uniq.csv", index=False, sep="\t")
-    """
-    """
 
     # data2vec(train_df, test_df)
     data2matrix(train_df, test_df)
@@ -422,3 +427,4 @@ if __name__ == "__main__":
 
     # gen_train_val_test_data()
     # gen_train_val_test_matrix()
+    """
