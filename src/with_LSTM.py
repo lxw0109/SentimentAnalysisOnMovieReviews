@@ -87,7 +87,7 @@ def model_train_val(X_train, X_val, y_train, y_val):
         X_val = np.reshape(X_val, (X_val.shape[0], X_val.shape[1], 1))
     print("X_train.shape:{0}\nX_val.shape:{1}\n".format(X_train.shape, X_val.shape))
 
-    BATCH_SIZE = 512
+    BATCH_SIZE = 1024
     EPOCHS = 300
     model = model_build(input_shape=(X_train.shape[1], X_train.shape[2]))
 
@@ -183,18 +183,18 @@ if __name__ == "__main__":
     np.random.seed(2)
     tf.set_random_seed(2)
 
-    """
     # X_train, X_val, X_test, X_test_id, y_train, y_val = gen_train_val_test_data()  # vector
     X_train, X_val, X_test, X_test_id, y_train, y_val = gen_train_val_test_matrix()  # matrix
     print("X_train.shape:{0}\nX_val.shape:{1}\nX_test.shape:{2}\nX_test_id.shape:{3}\n"
           "y_train.shape:{4}\ny_val.shape:{5}\n".format(X_train.shape, X_val.shape, X_test.shape,
                                                          X_test_id.shape, y_train.shape, y_val.shape))
 
-    # model_train_val(X_train, X_val, y_train, y_val)
+    model_train_val(X_train, X_val, y_train, y_val)
     # plot_hist()
 
+    """
     model = load_model("../data/output/models/matrix_v6.0_best_model_20_0.81.hdf5")
     model_predict(model, X_test, X_test_id, X_val, y_val)
-    """
 
     gen_submission()
+    """
