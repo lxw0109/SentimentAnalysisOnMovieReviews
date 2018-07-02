@@ -10,8 +10,8 @@ Kaggle竞赛题目[Sentiment Analysis on Movie Reviews](https://www.kaggle.com/c
 LSTM实现方法对应的loss和accuracy曲线如下图所示:  
  ![docs/images/matrix_with_dup_ep20_bs512_v6.0.png](docs/images/matrix_with_dup_ep20_bs512_v6.0.png)  
  
-Random Forest实现方法对应的loss和accuracy曲线如下图所示:  
- ![docs/images/]()
+<!-- Random Forest实现方法对应的loss和accuracy曲线如下图所示:  
+ ![docs/images/]() -->
 
 
 ## 2. 更多参数和其他实现方法的结果总结
@@ -28,6 +28,7 @@ Random Forest实现方法对应的loss和accuracy曲线如下图所示:
 | LSTM **v5.0** | **0.62886** | 19 | 1024 | 与v4.1区别: 1.更改Phrase词向量的表示形式(使用矩阵，而不是所有词向量的平均值) |
 | LSTM **v5.1** | 0.62831 | 22 | 1024 | 与v4.1区别: 1.更改Phrase词向量的表示形式(使用矩阵，而不是所有词向量的平均值) 2.所有单词转换为小写取词向量 |
 | LSTM **v6.0** | **0.65136** | 20 | 512 | 与v2.0区别: 1.更改Phrase词向量的表示形式(使用矩阵，而不是所有词向量的平均值) 2.不去除停用词 |
+| LSTM **v6.1** | **0.** |  | 1024 | 与v5.0区别: 不去除停用词. 与v6.0区别: 增加batch_size |
 | Random Forest v1.0 | 0.43836 | / | / | sklearn, 使用所有词向量的平均值表示句子 |
 | Random Forest v2.0 | 0.41821 | / | / | sklearn, 使用矩阵表示句子 |
 
@@ -42,7 +43,25 @@ Random Forest实现方法对应的loss和accuracy曲线如下图所示:
  ![docs/images/[wo_dup]ep66_bs512_v3.0.png](docs/images/[wo_dup]ep66_bs512_v3.0.png)  
  从图中我们可以看出:  
  + 去除重复样本时(v3.0)，第一次迭代后训练集和验证集上的准确率就比未去除重复样本的情况(v2.0)的低(v2.0首次迭代后准确率高于50%, 而v3.0的仅有46%左右). 经多次实验发现，去除训练集中的重复样本进行训练时就会出现这一现象.
- + 去除重复样本的情况(v3.0)，整个曲线变化比未去除重复样本的情况(v2.0)要变化的慢(准确率提升的慢)
+ + 去除重复样本的情况(v3.0)，整个曲线变化比未去除重复样本的情况(v2.0)要变化的慢(准确率提升的慢)   
+ **分析**:  
+ 去除重复样本后所训练的模型效果变差，通过到训练集中查看重复的样本，发现存在不少下面的这种情况:
+ ```
+ contemporary music business	2  
+ contemporary music business	3  
+ contemporary music business	2  
+ ```
+ 这一短语应该属于比较明显的"neutral"类型(2)，但存在一条将其标记为"somewhat positive"(3)的"干扰数据"，因此如果去掉重复样本，相当于减少了模型训练过程中的抗干扰样本(纠正干扰数据错误的样本).
+ ```
+ claustrophobic concept	1
+ claustrophobic concept	1
+ claustrophobic concept	1
+ claustrophobic concept	2
+ claustrophobic concept	1
+ claustrophobic concept	1
+ ```
+ 同理，这一短语应该属于比较明显的"somewhat negative"类型(1)，如果去除重复训练样本，那么相当于放大了"claustrophobic concept	2"这条错误样本的权重，减少了"claustrophobic concept	1"正确样本的权重
+ 
 4. v3.1: 与v2.0区别 去除了训练集中的重复样本、增加batch_size, 对应的loss和accuracy曲线如下图所示:  
  ![docs/images/[wo_dup]ep142_bs1024_v3.1.png](docs/images/[wo_dup]ep142_bs1024_v3.1.png)  
  从图中我们可以看出:   
@@ -63,7 +82,11 @@ Random Forest实现方法对应的loss和accuracy曲线如下图所示:
  与v5.0相比，准确率没有提升
 8. v6.0: 与v2.0区别 更改Phrase词向量的表示形式(使用矩阵，而不是所有词向量的平均值)且**不去除停用词**, 对应的loss和accuracy曲线如下图所示:  
  ![docs/images/matrix_with_dup_ep20_bs512_v6.0.png](docs/images/matrix_with_dup_ep20_bs512_v6.0.png)  
-
+ cannot, didn't, don't, always, awfully, never, really, somewhat等词都被包含在停用词里，所以如果去除了停用词显然会对情感分析的结果造成较大的影响. 最开始做时没有仔细审查停用词表, 导致浪费了很多时间
+ 
 ## 4. 关于预处理
 拿到数据首先应该做的就是预处理, 包括一些数据统计工作, 例如**统计样本的数据分布情况(label是否分布均匀)**, **查看样本数据缺失值的情况(并填补缺失值)**, **数据扩充(data augmentation)**, **特征提取**, **特征选择**, **标准化&归一化**, **降维**, **to_categorical**, **train_test_split**, **reshape**等
 
+## TODO
+1. 使用新的停用词表, 或对目前使用的snowNLP的英文停用词表进行过滤, 去掉明显对情感分析有影响的词(如cannot, always, awfully等)
+2. 
