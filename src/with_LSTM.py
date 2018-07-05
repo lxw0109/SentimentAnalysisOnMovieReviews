@@ -159,22 +159,20 @@ def gen_submission():
     # submission_df.to_csv("../data/output/submissions/sk_rf_submission_matrix_fill.csv")
 
 
-def model_train_val_bow(X_train, y_train, vocab_size, max_sent_len):
+def model_train_val_bow(X_train, X_val, y_train, y_val, vocab_size, max_sent_len):
     BATCH_SIZE = 1024
     EPOCHS = 300
 
     model = Sequential()
 
-    model.add(Embedding(input_dim=vocab_size+1, output_dim=64, input_length=max_sent_len, mask_zero=False,
-                        name="embedding"))
-    model.add(LSTM(units=64, return_sequences=True, name="lstm1"))
-    model.add(Dropout(0.25, name="dropout2"))
+    # TODO: 128, 64, 64 or 32, 网络结构的调整
+    model.add(Embedding(input_dim=vocab_size+1, output_dim=64, input_length=max_sent_len,
+                        mask_zero=False, name="embedding"))  # TODO: mask_zero=True
+    model.add(LSTM(units=64, return_sequences=True, dropout=0.25, name="lstm1"))
 
-    model.add(LSTM(units=128, return_sequences=False, name="lstm3"))
-    # model.add(GRU(units=128, return_sequences=False, name="gru3"))
-    model.add(Dropout(0.25, name="dropout4"))
+    model.add(LSTM(units=128, return_sequences=False, dropout=0.25, name="lstm2"))
 
-    model.add(Dense(units=5, activation="softmax", name="dense5"))
+    model.add(Dense(units=5, activation="softmax", name="dense3"))
     model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"])
 
     early_stopping = EarlyStopping(monitor="val_loss", patience=10)
@@ -186,7 +184,7 @@ def model_train_val_bow(X_train, y_train, vocab_size, max_sent_len):
 
     # hist_obj = model.fit(X_train, y_train, batch_size=BATCH_SIZE, epochs=EPOCHS, validation_split=0.1)
     hist_obj = model.fit(X_train, y_train, batch_size=BATCH_SIZE, epochs=EPOCHS, verbose=1, shuffle=True,
-                         validation_split=0.3, callbacks=[early_stopping, lr_reduction, checkpoint])
+                         validation_data=(X_val, y_val), callbacks=[early_stopping, lr_reduction, checkpoint])  # TODO: shuffle=False?
     with open(f"../data/output/history_{BATCH_SIZE}.pkl", "wb") as f:
         pickle.dump(hist_obj.history, f)
 
@@ -248,8 +246,8 @@ if __name__ == "__main__":
 
     # X_train, X_val, X_test, X_test_id, y_train, y_val = gen_train_val_test_data()  # vector
     # X_train, X_val, X_test, X_test_id, y_train, y_val = gen_train_val_test_matrix()  # matrix
-    # X_train, X_val, X_test, X_test_id, y_train, y_val, vocab_size, max_sent_len = data2vec_bow()  # "BOW" vector
-    X_train, y_train, X_test, X_test_id, vocab_size, max_sent_len = data2vec_bow()  # "BOW" vector
+    X_train, X_val, X_test, X_test_id, y_train, y_val, vocab_size, max_sent_len = data2vec_bow()  # "BOW" vector
+    # X_train, y_train, X_test, X_test_id, vocab_size, max_sent_len = data2vec_bow()  # "BOW" vector
 
     print(f"X_train.shape:{X_train.shape}\ny_train.shape:{y_train.shape}\n"
           f"X_test.shape:{X_test.shape}\nX_test_id.shape:{X_test_id.shape}\n")
@@ -261,8 +259,7 @@ if __name__ == "__main__":
     """
 
     # model_train_val(X_train, X_val, y_train, y_val)
-    # model_train_val_bow(X_train, X_val, y_train, y_val, vocab_size, max_sent_len)
-    model_train_val_bow(X_train, y_train, vocab_size, max_sent_len)
+    model_train_val_bow(X_train, X_val, y_train, y_val, vocab_size, max_sent_len)
 
     # plot_hist()
 

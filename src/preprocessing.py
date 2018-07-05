@@ -427,19 +427,17 @@ def data2vec_bow():
     word2index["PAD"] = 0  # "PAD"没有实际意义
     word2index["UNK"] = 1
     vocab_size += 2  # 加上"PAD", "UNK"
-    index2word = {v: k for k, v in word2index.items()}
+    # index2word = {v: k for k, v in word2index.items()}
 
     # 2. 处理得到训练集和验证集数据
-    X, y = bow1(sample_count, word2index, max_len)
-
-    # X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.333, random_state=1, shuffle=True)  # DEBUG
+    X, y = bow(sample_count, word2index, max_len)
+    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.333, random_state=1, shuffle=True)
 
     # 3. 处理得到测试集数据
     test_df = pd.read_csv("../data/input/test.tsv", sep="\t")  # (156060, 2)
     test_sample_count = test_df.shape[0]
     X_test = np.empty(test_sample_count, dtype=list)  # <ndarray of list>
     idx = 0
-    # TODO: 根据bow的形式这里要随着修改
     for sentence in test_df["Phrase"]:
         words = nltk.word_tokenize(sentence.lower())
         seqs = []
@@ -455,10 +453,10 @@ def data2vec_bow():
     X_test_id = test_df["PhraseId"]  # <Series>. shape: (,)
     # X_test_id = np.array(X_test_id)   # Keep X_test_id in <Series>.
 
-    # return X_train, X_val, X_test, X_test_id, y_train, y_val, vocab_size, max_len
-    return X, y, X_test, X_test_id, vocab_size, max_len
+    # return X, y, X_test, X_test_id, vocab_size, max_len
+    return X_train, X_val, X_test, X_test_id, y_train, y_val, vocab_size, max_len
 
-def bow1(sample_count, word2index, max_len):
+def bow(sample_count, word2index, max_len):
     X = np.empty(sample_count, dtype=list)  # <ndarray of list>
     y = np.zeros(sample_count)
     idx = 0
@@ -485,9 +483,6 @@ def bow1(sample_count, word2index, max_len):
     y = np_utils.to_categorical(y)
     assert y.shape[1] == 5
     return X, y
-
-def bow2():
-    pass
 
 
 if __name__ == "__main__":
