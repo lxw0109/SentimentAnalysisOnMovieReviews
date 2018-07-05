@@ -63,7 +63,7 @@ def data_analysis(train_df, test_df):
     # 1. 样本数据的均衡性统计(各个label数据是否均匀分布)
     sns.countplot(y_train)
     plt.show()
-    print(y_train.value_counts())  # TODO: Is this an imbalanced dataset? NO
+    print(y_train.value_counts())  # Is this an imbalanced dataset? NO
     """
     2    79582
     3    32927
