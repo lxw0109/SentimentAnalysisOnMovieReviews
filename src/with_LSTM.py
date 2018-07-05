@@ -160,7 +160,7 @@ def gen_submission():
 
 
 def model_train_val_bow(X_train, X_val, y_train, y_val, vocab_size, max_sent_len):
-    BATCH_SIZE = 512
+    BATCH_SIZE = 1024
     EPOCHS = 300
 
     model = Sequential()
@@ -255,7 +255,7 @@ if __name__ == "__main__":
                                                          X_test_id.shape, y_train.shape, y_val.shape))
 
     # model_train_val(X_train, X_val, y_train, y_val)
-    model_train_val_bow(X_train, X_val, y_train, y_val, vocab_size, max_sent_len)
+    # model_train_val_bow(X_train, X_val, y_train, y_val, vocab_size, max_sent_len)
 
     # plot_hist()
 
@@ -265,3 +265,6 @@ if __name__ == "__main__":
 
     gen_submission()
     """
+
+    model = load_model("../data/output/models/best_model_05_0.85.hdf5")
+    model_predict_bow(model, X_test, X_test_id, X_val, y_val)
