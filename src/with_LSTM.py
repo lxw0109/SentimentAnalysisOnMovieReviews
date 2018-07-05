@@ -111,7 +111,7 @@ def model_train_val(X_train, X_val, y_train, y_val):
     # model.save(f"../data/output/models/lstm_{BATCH_SIZE}.model")
 
 def model_train_val_bow(X_train, X_val, y_train, y_val, vocab_size, max_sent_len):
-    BATCH_SIZE = 1024
+    BATCH_SIZE = 512
     EPOCHS = 300
 
     model = Sequential()
