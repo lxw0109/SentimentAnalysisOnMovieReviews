@@ -88,7 +88,7 @@ def model_train_val(X_train, X_val, y_train, y_val):
         X_val = np.reshape(X_val, (X_val.shape[0], X_val.shape[1], 1))
     print("X_train.shape:{0}\nX_val.shape:{1}\n".format(X_train.shape, X_val.shape))
 
-    BATCH_SIZE = 512
+    BATCH_SIZE = 32  # NOT HERE
     EPOCHS = 300
     model = model_build(input_shape=(X_train.shape[1], X_train.shape[2]))
 
@@ -160,8 +160,9 @@ def gen_submission():
 
 
 def model_train_val_bow(X_train, X_val, y_train, y_val, vocab_size, max_sent_len):
-    BATCH_SIZE = 512
+    BATCH_SIZE = 128
     EPOCHS = 300
+    print(f"BATCH_SIZE: {BATCH_SIZE}")
 
     model = Sequential()
 
@@ -281,5 +282,5 @@ if __name__ == "__main__":
     gen_submission()
     """
 
-    model = load_model("../data/output/models/best_model_04_0.85.hdf5")
+    model = load_model("../data/output/models/best_model_04_0.83.hdf5")
     model_predict_bow(model, X_test, X_test_id, X_val, y_val)

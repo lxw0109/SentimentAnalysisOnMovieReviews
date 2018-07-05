@@ -424,7 +424,7 @@ def data2vec_bow():
     print(f"Length of the longest sentence in the training set: {max_len}")  # 53
     print(f"vocabulary size: {len(word_freqs)}")  # 16540. 包括标点符号
 
-    vocab_size = len(word_freqs)
+    vocab_size = len(word_freqs)  # TODO: min(MAX_VOCAB_SIZE, len(word_freqs))
     # word_freqs.most_common(vocab_size): <list of tuple>. [("i", 4705), ",", 4194, ".": 3558, "the": 3221, ...]
     word2index = {word[0]: idx + 2 for idx, word in enumerate(word_freqs.most_common(vocab_size))}
     word2index["PAD"] = 0  # "PAD"没有实际意义
@@ -452,7 +452,7 @@ def data2vec_bow():
         X_test[idx] = seqs
         idx += 1
 
-    X_test = sequence.pad_sequences(X_test, maxlen=max_len, value=0)  # default: 从前面补0, 从前面删除
+    X_test = sequence.pad_sequences(X_test, maxlen=max_len, value=0)  # default: 从前面补0, 从前面删除 maxlen=MAX_SENTENCE_LENGTH
     X_test_id = test_df["PhraseId"]  # <Series>. shape: (,)
     # X_test_id = np.array(X_test_id)   # Keep X_test_id in <Series>.
 
