@@ -403,6 +403,8 @@ def data2vec_bow():
     max_len = 0
     word_freqs = collections.Counter()
     sample_count = 0
+    stopwords_set = {"--", "<", ">", ",", ".", "\"", "/", "~", "`", "-", "=", "+", "(",
+                     ")", "*", ":", ";", "“", "”", "[", "]", "a", "an", "be", "the"}
 
     # 1. 统计句子最长长度、词频统计、单词索引映射
     with open("../data/input/train.tsv", "r") as f:
@@ -411,6 +413,7 @@ def data2vec_bow():
             line_list = line.strip().split("\t")  # split()要求必须是str类型，不能是bytes类型
             sentence = line_list[2]
             words = nltk.word_tokenize(sentence.lower())  # type(words): list
+            words = [word for word in words if word not in stopwords_set]  # 去重停用词
             length = len(words)
             if length > max_len:
                 max_len = length
