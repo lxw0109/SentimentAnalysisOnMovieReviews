@@ -425,6 +425,8 @@ def data2vec_bow():
     print(f"vocabulary size: {len(word_freqs)}")  # 16540. 包括标点符号
 
     vocab_size = len(word_freqs)  # TODO: min(MAX_VOCAB_SIZE, len(word_freqs))
+    print([item[0] for item in word_freqs.most_common(vocab_size)])
+    # print(word_freqs.most_common(vocab_size))
     # word_freqs.most_common(vocab_size): <list of tuple>. [("i", 4705), ",", 4194, ".": 3558, "the": 3221, ...]
     word2index = {word[0]: idx + 2 for idx, word in enumerate(word_freqs.most_common(vocab_size))}
     word2index["PAD"] = 0  # "PAD"没有实际意义
