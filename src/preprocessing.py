@@ -403,8 +403,19 @@ def data2vec_bow():
     max_len = 0
     word_freqs = collections.Counter()
     sample_count = 0
-    stopwords_set = {"--", "<", ">", ",", ".", "\"", "/", "~", "`", "-", "=", "+", "(",
-                     ")", "*", ":", ";", "“", "”", "[", "]", "a", "an", "be", "the"}
+    stopwords_set = {"--", "<", ">", ",", ".", "\"", "/", "~", "`", "-", "=", "+", "(", ")", "*", ":", ";", "“", "”",
+                     "[", "]", "a", "an", "be", "the", 'of', 'and', 'to', "'s", 'in', 'is', 'that', 'it', 'as', 'with',
+                     'for', 'its', 'film', 'movie', 'this', 'you', 'on', 'by', 'his', 'about', 'one', '``', 'at', 'or',
+                     'from', 'have', 'are', 'has', "'", 'story', '-rrb-', 'out', 'who', 'into', 'up', '-lrb-', 'if',
+                     'what', 'their', '...', 'characters', 'can', 'i', 'your', 'time', 'some', 'does', 'will', 'way',
+                     'life', 'been', 'make', 'which', 'he', 'movies', 'do', 'there', 'work', 'her', 'was', 'us', 'own',
+                     'they', 'other', 'something', 'would', 'we', 'director', 'through', 'many', 'people', 'when',
+                     'made', 'two', 'makes', 'them', 'how', 'action', 'may', 'plot', 'films', 'could', 'character',
+                     'see', 'being', 'world', 'audience', 'drama', 'look', 'those', 'sense', 'every', 'another',
+                     'should', 'over', "'re", 'feel', 'get', 'minutes', 'man', 'performances', 'cast', 'hollywood',
+                     'while', 'human', 'between', 'performance', 'might', 'screen', 'things', 'were', 'had', 'these',
+                     'moments', 'script', 'family', 'also', 'seen', 'our', 'before', 'american', 'because', 'watch',
+                     'heart', 'end', 'my', 'actors', 'after', 'here', 'cinema', 'go'}
 
     # 1. 统计句子最长长度、词频统计、单词索引映射
     with open("../data/input/train.tsv", "r") as f:
