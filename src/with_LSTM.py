@@ -159,7 +159,7 @@ def gen_submission():
     # submission_df.to_csv("../data/output/submissions/sk_rf_submission_matrix_fill.csv")
 
 
-def model_train_val_bow(X_train, X_val, y_train, y_val, vocab_size, max_sent_len):
+def model_train_val_bow(X_train, y_train, vocab_size, max_sent_len):
     BATCH_SIZE = 1024
     EPOCHS = 300
 
@@ -185,8 +185,8 @@ def model_train_val_bow(X_train, X_val, y_train, y_val, vocab_size, max_sent_len
     checkpoint = ModelCheckpoint(filepath=model_path, monitor="val_loss", verbose=1, save_best_only=True, mode="min")
 
     # hist_obj = model.fit(X_train, y_train, batch_size=BATCH_SIZE, epochs=EPOCHS, validation_split=0.1)
-    hist_obj = model.fit(X_train, y_train, batch_size=BATCH_SIZE, epochs=EPOCHS, verbose=1,
-                         validation_data=(X_val, y_val), callbacks=[early_stopping, lr_reduction, checkpoint])
+    hist_obj = model.fit(X_train, y_train, batch_size=BATCH_SIZE, epochs=EPOCHS, verbose=1, shuffle=True,
+                         validation_data=0.3, callbacks=[early_stopping, lr_reduction, checkpoint])
     with open(f"../data/output/history_{BATCH_SIZE}.pkl", "wb") as f:
         pickle.dump(hist_obj.history, f)
 
@@ -248,14 +248,20 @@ if __name__ == "__main__":
 
     # X_train, X_val, X_test, X_test_id, y_train, y_val = gen_train_val_test_data()  # vector
     # X_train, X_val, X_test, X_test_id, y_train, y_val = gen_train_val_test_matrix()  # matrix
-    X_train, X_val, X_test, X_test_id, y_train, y_val, vocab_size, max_sent_len = data2vec_bow()  # "BOW" vector
+    # X_train, X_val, X_test, X_test_id, y_train, y_val, vocab_size, max_sent_len = data2vec_bow()  # "BOW" vector
+    X_train, y_train, X_test, X_test_id, vocab_size, max_sent_len = data2vec_bow()  # "BOW" vector
 
+    print(f"X_train.shape:{X_train.shape}\ny_train.shape:{y_train.shape}\n"
+          f"X_test.shape:{X_test.shape}\nX_test_id.shape:{X_test_id.shape}\n")
+
+    """
     print("X_train.shape:{0}\nX_val.shape:{1}\nX_test.shape:{2}\nX_test_id.shape:{3}\n"
           "y_train.shape:{4}\ny_val.shape:{5}\n".format(X_train.shape, X_val.shape, X_test.shape,
                                                          X_test_id.shape, y_train.shape, y_val.shape))
+    """
 
     # model_train_val(X_train, X_val, y_train, y_val)
-    model_train_val_bow(X_train, X_val, y_train, y_val, vocab_size, max_sent_len)
+    model_train_val_bow(X_train, y_train, vocab_size, max_sent_len)
 
     # plot_hist()
 
