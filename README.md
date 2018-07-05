@@ -89,4 +89,4 @@ LSTM实现方法对应的loss和accuracy曲线如下图所示:
 
 ## TODO
 1. 使用新的停用词表, 或对目前使用的snowNLP的英文停用词表进行过滤, 去掉明显对情感分析有影响的词(如cannot, always, awfully等)
-2. 
+2. y需要离散化处理吗? 

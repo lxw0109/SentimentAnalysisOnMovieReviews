@@ -4,13 +4,16 @@
 # Author: lxw
 # Date: 5/14/18 10:53 PM
 
+import collections
 import json
 import numpy as np
+import nltk
 import pandas as pd
 import time
 
 from gensim.models import KeyedVectors
 from gensim.models import word2vec
+from keras.preprocessing import sequence
 from keras.utils import np_utils
 # from pyfasttext import FastText
 from sklearn.model_selection import train_test_split
@@ -57,10 +60,10 @@ def data_analysis(train_df, test_df):
     # free some space
     del train_df
 
-    # 1. 查看样本数据分布情况(各个label数据是否均匀分布)
+    # 1. 样本数据的均衡性统计(各个label数据是否均匀分布)
     sns.countplot(y_train)
     plt.show()
-    print(y_train.value_counts())  # TODO: Is this an imbalanced dataset?
+    print(y_train.value_counts())  # TODO: Is this an imbalanced dataset? NO
     """
     2    79582
     3    32927
@@ -396,15 +399,109 @@ def gen_train_val_test_matrix():
     return X_train, X_val, X_test, X_test_id, y_train, y_val
 
 
+def data2vec_bow():
+    max_len = 0
+    word_freqs = collections.Counter()
+    sample_count = 0
+
+    # 1. 统计句子最长长度、词频统计、单词索引映射
+    with open("../data/input/train.tsv", "r") as f:
+        f.readline()
+        for line in f:
+            line_list = line.strip().split("\t")  # split()要求必须是str类型，不能是bytes类型
+            sentence = line_list[2]
+            words = nltk.word_tokenize(sentence.lower())  # type(words): list
+            length = len(words)
+            if length > max_len:
+                max_len = length
+            for word in words:
+                word_freqs[word] += 1
+            sample_count += 1
+
+    print(f"Length of the longest sentence in the training set: {max_len}")  # 53
+    print(f"vocabulary size: {len(word_freqs)}")  # 16540. 包括标点符号
+
+    vocab_size = len(word_freqs)
+    # word_freqs.most_common(vocab_size): <list of tuple>. [("i", 4705), ",", 4194, ".": 3558, "the": 3221, ...]
+    word2index = {word[0]: idx + 2 for idx, word in enumerate(word_freqs.most_common(vocab_size))}
+    word2index["PAD"] = 0  # "PAD"没有实际意义
+    word2index["UNK"] = 1
+    vocab_size += 2  # 加上"PAD", "UNK"
+    index2word = {v: k for k, v in word2index.items()}
+
+    # 2. 处理得到训练集和验证集数据
+    X, y = bow1(sample_count, word2index, max_len)
+
+    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.333, random_state=1, shuffle=True)
+
+    # 3. 处理得到测试集数据
+    test_df = pd.read_csv("../data/input/test.tsv", sep="\t")  # (156060, 2)
+    test_sample_count = test_df.shape[0]
+    X_test = np.empty(test_sample_count, dtype=list)  # <ndarray of list>
+    idx = 0
+    # TODO: 根据bow的形式这里要随着修改
+    for sentence in test_df["Phrase"]:
+        words = nltk.word_tokenize(sentence.lower())
+        seqs = []
+        for word in words:
+            if word in word2index:
+                seqs.append(word2index[word])
+            else:
+                seqs.append(word2index["UNK"])
+        X_test[idx] = seqs
+        idx += 1
+
+    X_test = sequence.pad_sequences(X_test, maxlen=max_len, value=0)  # default: 从前面补0, 从前面删除
+    X_test_id = test_df["PhraseId"]  # <Series>. shape: (,)
+    # X_test_id = np.array(X_test_id)   # Keep X_test_id in <Series>.
+
+    return X_train, X_val, X_test, X_test_id, y_train, y_val, vocab_size, max_len
+
+def bow1(sample_count, word2index, max_len):
+    X = np.empty(sample_count, dtype=list)  # <ndarray of list>
+    y = np.zeros(sample_count)
+    idx = 0
+    with open("../data/input/train.tsv", "r") as f:
+        f.readline()
+        for line in f:
+            line_list = line.strip().split("\t")
+            label = line_list[3]
+            sentence = line_list[2]
+            words = nltk.word_tokenize(sentence.lower())
+            seqs = []
+            for word in words:
+                if word in word2index:
+                    seqs.append(word2index[word])
+                else:
+                    seqs.append(word2index["UNK"])
+            X[idx] = seqs
+            y[idx] = int(label)
+            idx += 1
+
+    X = sequence.pad_sequences(X, maxlen=max_len, value=0)  # default: 从前面补0, 从前面删除
+    # 从后面补0, 从后面删除. NOTE: 改成从后面补零和截取后，结果变差了一点.
+    # X = sequence.pad_sequences(X, maxlen=MAX_SENTENCE_LENGTH, value=0, padding="post", truncating="post")
+    y = np_utils.to_categorical(y)
+    assert y.shape[1] == 5
+    return X, y
+
+def bow2():
+    pass
+
+
 if __name__ == "__main__":
+    data2vec_bow()
+
+    """
     origin_train_path = "../data/input/train.tsv"
     origin_test_path = "../data/input/test.tsv"
     train_df, test_df = fetch_data_df(train_path= origin_train_path, test_path=origin_test_path, sep="\t")
+    """
 
     # 1. 去除phrase中的stopwords, 生成文件"../data/output/train_wo_sw.csv" 和 "test_wo_sw.csv"
     # rm_stopwords(train_df, test_df)
 
-    data_analysis(train_df, test_df)
+    # data_analysis(train_df, test_df)
 
     """
     # train_path = "../data/output/train_wo_sw.csv"  # DEBUG: "train_wo_sw_uniq.csv"
@@ -428,3 +525,4 @@ if __name__ == "__main__":
     # gen_train_val_test_data()
     # gen_train_val_test_matrix()
     """
+
