@@ -159,8 +159,8 @@ def gen_submission():
     # submission_df.to_csv("../data/output/submissions/sk_rf_submission_matrix_fill.csv")
 
 
-def model_train_val_bow(X_train, y_train, vocab_size, max_sent_len):
-    BATCH_SIZE = 1024
+def model_train_val_bow(X_train, X_val, y_train, y_val, vocab_size, max_sent_len):
+    BATCH_SIZE = 512
     EPOCHS = 300
 
     model = Sequential()
