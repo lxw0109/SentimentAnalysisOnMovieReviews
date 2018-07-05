@@ -432,7 +432,7 @@ def data2vec_bow():
     # 2. 处理得到训练集和验证集数据
     X, y = bow1(sample_count, word2index, max_len)
 
-    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.333, random_state=1, shuffle=True)
+    # X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.333, random_state=1, shuffle=True)  # DEBUG
 
     # 3. 处理得到测试集数据
     test_df = pd.read_csv("../data/input/test.tsv", sep="\t")  # (156060, 2)
@@ -455,7 +455,8 @@ def data2vec_bow():
     X_test_id = test_df["PhraseId"]  # <Series>. shape: (,)
     # X_test_id = np.array(X_test_id)   # Keep X_test_id in <Series>.
 
-    return X_train, X_val, X_test, X_test_id, y_train, y_val, vocab_size, max_len
+    # return X_train, X_val, X_test, X_test_id, y_train, y_val, vocab_size, max_len
+    return X, y, X_test, X_test_id, vocab_size, max_len
 
 def bow1(sample_count, word2index, max_len):
     X = np.empty(sample_count, dtype=list)  # <ndarray of list>
