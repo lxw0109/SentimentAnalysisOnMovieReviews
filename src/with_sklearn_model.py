@@ -61,7 +61,7 @@ def train_val_predict(X_train, X_val, X_test, X_test_id, y_train, y_val):
     # 7. RF: 随机森林
     from sklearn.ensemble import RandomForestClassifier
     # n_jobs: If -1, the number of jobs is set to the number of cores.
-    model = RandomForestClassifier(n_estimators=100, min_samples_leaf=10, n_jobs=-1, random_state=0)
+    model = RandomForestClassifier(n_estimators=1200, min_samples_leaf=10, n_jobs=-1, random_state=0)
 
     model.fit(X_train, y_train)
     y_val_pred = model.predict(X_val)
