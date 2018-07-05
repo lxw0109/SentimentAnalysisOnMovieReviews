@@ -63,7 +63,7 @@ def data_analysis(train_df, test_df):
     # 1. 样本数据的均衡性统计(各个label数据是否均匀分布)
     sns.countplot(y_train)
     plt.show()
-    print(y_train.value_counts())  # TODO: Is this an imbalanced dataset? NO
+    print(y_train.value_counts())  # Is this an imbalanced dataset? NO
     """
     2    79582
     3    32927
@@ -403,6 +403,8 @@ def data2vec_bow():
     max_len = 0
     word_freqs = collections.Counter()
     sample_count = 0
+    stopwords_set = {"--", "<", ">", ",", ".", "\"", "/", "~", "`", "-", "=", "+", "(",
+                     ")", "*", ":", ";", "“", "”", "[", "]", "a", "an", "be", "the"}
 
     # 1. 统计句子最长长度、词频统计、单词索引映射
     with open("../data/input/train.tsv", "r") as f:
@@ -411,6 +413,7 @@ def data2vec_bow():
             line_list = line.strip().split("\t")  # split()要求必须是str类型，不能是bytes类型
             sentence = line_list[2]
             words = nltk.word_tokenize(sentence.lower())  # type(words): list
+            words = [word for word in words if word not in stopwords_set]  # 去重停用词
             length = len(words)
             if length > max_len:
                 max_len = length
