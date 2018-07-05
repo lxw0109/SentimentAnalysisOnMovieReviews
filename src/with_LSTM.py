@@ -183,12 +183,15 @@ def model_train_val_bow(X_train, X_val, y_train, y_val, vocab_size, max_sent_len
     checkpoint = ModelCheckpoint(filepath=model_path, monitor="val_loss", verbose=1, save_best_only=True, mode="min")
 
     # hist_obj = model.fit(X_train, y_train, batch_size=BATCH_SIZE, epochs=EPOCHS, validation_split=0.1)
-    hist_obj = model.fit(X_train, y_train, batch_size=BATCH_SIZE, epochs=EPOCHS, verbose=1, shuffle=True,
-                         validation_data=(X_val, y_val), callbacks=[early_stopping, lr_reduction, checkpoint])  # TODO: shuffle=False?
+    hist_obj = model.fit(X_train, y_train, batch_size=BATCH_SIZE, epochs=EPOCHS, verbose=1, 
+                         validation_data=(X_val, y_val), callbacks=[early_stopping, lr_reduction, checkpoint])  # shuffle默认值是True
     """
-    # NOTE: 上一行中validation_data改成validation_split=0.3后准确率下降了5~6个百分点
-    # 当使用validation_split时"The validation data is selected from the last samples in the x and y data provided, before shuffling."
-    准确率下降可能和shuffle是有关的, 本来使用validation_split是想使用交叉验证的，但应该无法起到交叉验证的作用(不一定，需要进一步确认)，
+    # NOTE: 上一行中validation_data改成validation_split=0.3后准确率下降了5~6个百分点:
+    当使用validation_split时"The validation data is selected from the last samples in the x and y data provided, before shuffling."
+    准确率下降可能和shuffle是有关的, 因为是在shuffle之前进行的切割，可能训练集、验证集的数据均衡性分布有问题，导致训练效果变差
+    "shuffle: whether to shuffle the training data before each epoch"
+
+    此外, 本来使用validation_split是想使用交叉验证的，但似乎并不会起到交叉验证的作用(不一定，需要进一步确认)，
     只是把这些数据剔除出来不进行训练, 和sklearn的train_test_split是一样的，但train_test_split提供了shuffle，
     所以还是train_test_split好些
     """
@@ -267,7 +270,7 @@ if __name__ == "__main__":
     """
 
     # model_train_val(X_train, X_val, y_train, y_val)
-    model_train_val_bow(X_train, X_val, y_train, y_val, vocab_size, max_sent_len)
+    # model_train_val_bow(X_train, X_val, y_train, y_val, vocab_size, max_sent_len)
 
     # plot_hist()
 
@@ -278,5 +281,5 @@ if __name__ == "__main__":
     gen_submission()
     """
 
-    # model = load_model("../data/output/models/best_model_05_0.85.hdf5")
-    # model_predict_bow(model, X_test, X_test_id, X_val, y_val)
+    model = load_model("../data/output/models/best_model_04_0.85.hdf5")
+    model_predict_bow(model, X_test, X_test_id, X_val, y_val)
