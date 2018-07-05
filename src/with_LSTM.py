@@ -160,7 +160,7 @@ def gen_submission():
 
 
 def model_train_val_bow(X_train, X_val, y_train, y_val, vocab_size, max_sent_len):
-    BATCH_SIZE = 1024
+    BATCH_SIZE = 512
     EPOCHS = 300
 
     model = Sequential()
@@ -185,6 +185,14 @@ def model_train_val_bow(X_train, X_val, y_train, y_val, vocab_size, max_sent_len
     # hist_obj = model.fit(X_train, y_train, batch_size=BATCH_SIZE, epochs=EPOCHS, validation_split=0.1)
     hist_obj = model.fit(X_train, y_train, batch_size=BATCH_SIZE, epochs=EPOCHS, verbose=1, shuffle=True,
                          validation_data=(X_val, y_val), callbacks=[early_stopping, lr_reduction, checkpoint])  # TODO: shuffle=False?
+    """
+    # NOTE: 上一行中validation_data改成validation_split=0.3后准确率下降了5~6个百分点
+    # 当使用validation_split时"The validation data is selected from the last samples in the x and y data provided, before shuffling."
+    准确率下降可能和shuffle是有关的, 本来使用validation_split是想使用交叉验证的，但应该无法起到交叉验证的作用(不一定，需要进一步确认)，
+    只是把这些数据剔除出来不进行训练, 和sklearn的train_test_split是一样的，但train_test_split提供了shuffle，
+    所以还是train_test_split好些
+    """
+
     with open(f"../data/output/history_{BATCH_SIZE}.pkl", "wb") as f:
         pickle.dump(hist_obj.history, f)
 
