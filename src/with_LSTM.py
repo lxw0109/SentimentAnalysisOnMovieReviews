@@ -160,18 +160,19 @@ def gen_submission():
 
 
 def model_train_val_bow(X_train, X_val, y_train, y_val, vocab_size, max_sent_len):
-    BATCH_SIZE = 32
+    BATCH_SIZE = 16
     EPOCHS = 300
     print(f"BATCH_SIZE: {BATCH_SIZE}")
 
     model = Sequential()
 
-    # TODO: 128, 64, 64 or 32, 网络结构的调整
+    # 128, 64, 64 or 32, 网络结构的调整. 效果没有提升，基本不变
     model.add(Embedding(input_dim=vocab_size+1, output_dim=64, input_length=max_sent_len,
-                        mask_zero=False, name="embedding"))  # TODO: mask_zero=True
-    model.add(LSTM(units=64, return_sequences=True, dropout=0.25, name="lstm1"))
+                        mask_zero=True, name="embedding"))  # mask_zero=True 不比mask_zero=False好, 基本差不多
+    # model.add(LSTM(units=64, return_sequences=True, dropout=0.25, name="lstm1"))
+    model.add(LSTM(units=32, return_sequences=False, dropout=0.5, name="lstm1"))
 
-    model.add(LSTM(units=128, return_sequences=False, dropout=0.25, name="lstm2"))
+    # model.add(LSTM(units=128, return_sequences=False, dropout=0.25, name="lstm2"))
 
     model.add(Dense(units=5, activation="softmax", name="dense3"))
     model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"])
@@ -182,6 +183,7 @@ def model_train_val_bow(X_train, X_val, y_train, y_val, vocab_size, max_sent_len
     model_path = "../data/output/models/best_model_{epoch:02d}_{val_loss:.2f}.hdf5"  # 保存到多个模型文件
     # model_path = "../data/output/models/best_model.hdf5"  # 保存到1个模型文件(因为文件名相同)
     checkpoint = ModelCheckpoint(filepath=model_path, monitor="val_loss", verbose=1, save_best_only=True, mode="min")
+    # checkpoint = ModelCheckpoint(filepath=model_path, monitor="val_acc", verbose=1, save_best_only=True, mode="max")
 
     # hist_obj = model.fit(X_train, y_train, batch_size=BATCH_SIZE, epochs=EPOCHS, validation_split=0.1)
     hist_obj = model.fit(X_train, y_train, batch_size=BATCH_SIZE, epochs=EPOCHS, verbose=1, 
@@ -271,7 +273,7 @@ if __name__ == "__main__":
     """
 
     # model_train_val(X_train, X_val, y_train, y_val)
-    model_train_val_bow(X_train, X_val, y_train, y_val, vocab_size, max_sent_len)
+    # model_train_val_bow(X_train, X_val, y_train, y_val, vocab_size, max_sent_len)
 
     # plot_hist()
 
@@ -282,5 +284,5 @@ if __name__ == "__main__":
     gen_submission()
     """
 
-    # model = load_model("../data/output/models/best_model_04_0.83.hdf5")
-    # model_predict_bow(model, X_test, X_test_id, X_val, y_val)
+    model = load_model("../data/output/models/best_model_03_0.85.hdf5")
+    model_predict_bow(model, X_test, X_test_id, X_val, y_val)

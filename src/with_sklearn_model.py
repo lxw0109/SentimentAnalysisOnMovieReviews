@@ -15,14 +15,18 @@ from sklearn.model_selection import StratifiedKFold
 
 # from src.preprocessing import gen_train_val_test_data
 # from preprocessing import gen_train_val_test_data
-from preprocessing import gen_train_val_test_matrix
+# from preprocessing import gen_train_val_test_matrix
+from preprocessing import data2vec_bow
 
 
 def train_val_predict(X_train, X_val, X_test, X_test_id, y_train, y_val):
+    '''
     X_train = X_train.reshape(X_train.shape[0], -1)
     X_val = X_val.reshape(X_val.shape[0], -1)
     X_test = X_test.reshape(X_test.shape[0], -1)
     print(f"X_train.shape: {X_train.shape}, X_test.shape: {X_test.shape}, X_val.shape:{X_val.shape}")
+    '''
+
     '''
     # 1. [NO]LR: LR算法的优点是可以给出数据所在类别的概率
     model = linear_model.LogisticRegression(C=1e5)
@@ -65,17 +69,18 @@ def train_val_predict(X_train, X_val, X_test, X_test_id, y_train, y_val):
 
     model.fit(X_train, y_train)
     y_val_pred = model.predict(X_val)
-    print("classification_report:", classification_report(y_val, y_val_pred))  # y_true, y_pred
-    print("Mean accuracy score:", accuracy_score(y_val, y_val_pred))
+    print(f"classification_report: {classification_report(y_val, y_val_pred)}")  # y_true, y_pred
+    print(f"Mean accuracy score: {accuracy_score(y_val, y_val_pred)}\n{'--' * 20}\n")  # 0.33
+    print(f"y_val: {y_val}\ny_val_pred: {y_val_pred}\n{'--' * 20}\]n")
+
+    print(f"model.score: {model.score(X_val, y_val)}\n{'--' * 20}\n")  # 0.33
+
     # cv = StratifiedKFold(n_splits=5, shuffle=True)
     scores = cross_val_score(model, X_train, y_train, cv=5)
-    print(f"Accuracy: {scores.mean():.2f}(+/- {scores.std() * 2:.2f})")
-    print("model.score:", model.score(X_val, y_val))
-    """
-    Mean accuracy score: 0.502193657635468
-    Accuracy: 0.48(+/- 0.01)
-    model.score: 0.5023283559113301
-    """
+    print(f"[Training Set]\nAccuracy: {scores.mean():.2f}(+/-{scores.std() * 2:.2f})")  # 0.33
+    scores = cross_val_score(model, X_val, y_val, cv=5)
+    print(f"[Validation Set]\nAccuracy: {scores.mean():.2f}(+/-{scores.std() * 2:.2f})")  # 0.33
+    print(f"scores: {scores}")
 
     predicted = model.predict(X_test)
     # print(predicted)
@@ -84,12 +89,14 @@ def train_val_predict(X_train, X_val, X_test, X_test_id, y_train, y_val):
     predicted = pd.Series(predicted, name="Sentiment")
     submission = pd.concat([X_test_id, predicted], axis=1)
     # submission.to_csv("../data/output/submissions/sk_knn_submission.csv", index=False)
-    submission.to_csv("../data/output/submissions/sk_rf_submission_matrix.csv", index=False)
+    # submission.to_csv("../data/output/submissions/sk_rf_submission_matrix.csv", index=False)
+    submission.to_csv("../data/output/submissions/sk_rf_submission_cbow.csv", index=False)
 
 
 if __name__ == "__main__":
     # X_train, X_val, X_test, X_test_id, y_train, y_val = gen_train_val_test_data()
-    X_train, X_val, X_test, X_test_id, y_train, y_val = gen_train_val_test_matrix()
+    # X_train, X_val, X_test, X_test_id, y_train, y_val = gen_train_val_test_matrix()
+    X_train, X_val, X_test, X_test_id, y_train, y_val, vocab_size, max_len = data2vec_bow()
     print("X_train.shape:{0}\nX_val.shape:{1}\nX_test.shape:{2}\nX_test_id.shape:{3}\ny_train.shape:{4}\ny_val.shape:{5}\n".\
         format(X_train.shape, X_val.shape, X_test.shape, X_test_id.shape, y_train.shape, y_val.shape))
     train_val_predict(X_train, X_val, X_test, X_test_id, y_train, y_val)

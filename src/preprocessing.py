@@ -435,14 +435,16 @@ def data2vec_bow():
     print(f"Length of the longest sentence in the training set: {max_len}")  # 53
     print(f"vocabulary size: {len(word_freqs)}")  # 16540. 包括标点符号
 
-    vocab_size = len(word_freqs)  # TODO: min(MAX_VOCAB_SIZE, len(word_freqs))
-    print([item[0] for item in word_freqs.most_common(vocab_size)])
+    # vocab_size = len(word_freqs)
+    # print([item[0] for item in word_freqs.most_common(vocab_size)])
     # print(word_freqs.most_common(vocab_size))
     # word_freqs.most_common(vocab_size): <list of tuple>. [("i", 4705), ",", 4194, ".": 3558, "the": 3221, ...]
-    word2index = {word[0]: idx + 2 for idx, word in enumerate(word_freqs.most_common(vocab_size))}
+    word2index = {word[0]: idx + 2 for idx, word in enumerate(word_freqs.most_common()) if word[1] > 2}
     word2index["PAD"] = 0  # "PAD"没有实际意义
     word2index["UNK"] = 1
-    vocab_size += 2  # 加上"PAD", "UNK"
+    # vocab_size += 2  # 加上"PAD", "UNK"
+    vocab_size = len(word2index)
+    print(f"vocab_size: {vocab_size}")
     # index2word = {v: k for k, v in word2index.items()}
 
     # 2. 处理得到训练集和验证集数据
@@ -470,6 +472,11 @@ def data2vec_bow():
     # X_test_id = np.array(X_test_id)   # Keep X_test_id in <Series>.
 
     # return X, y, X_test, X_test_id, vocab_size, max_len
+    """
+    X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1], 1))
+    X_val = np.reshape(X_val, (X_val.shape[0], X_val.shape[1], 1))
+    X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 1))
+    """
     return X_train, X_val, X_test, X_test_id, y_train, y_val, vocab_size, max_len
 
 def bow(sample_count, word2index, max_len):
