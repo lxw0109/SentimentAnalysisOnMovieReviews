@@ -509,20 +509,19 @@ def bow(sample_count, word2index, max_len):
 
 
 if __name__ == "__main__":
-    data2vec_bow()
+    # data2vec_bow()
 
     """
     origin_train_path = "../data/input/train.tsv"
     origin_test_path = "../data/input/test.tsv"
     train_df, test_df = fetch_data_df(train_path= origin_train_path, test_path=origin_test_path, sep="\t")
-    """
 
     # 1. 去除phrase中的stopwords, 生成文件"../data/output/train_wo_sw.csv" 和 "test_wo_sw.csv"
-    # rm_stopwords(train_df, test_df)
+    rm_stopwords(train_df, test_df)
 
     # data_analysis(train_df, test_df)
-
     """
+
     # train_path = "../data/output/train_wo_sw.csv"  # DEBUG: "train_wo_sw_uniq.csv"
     # test_path = "../data/output/test_wo_sw.csv"
     train_path = "../data/input/train.tsv"
@@ -543,5 +542,6 @@ if __name__ == "__main__":
 
     # gen_train_val_test_data()
     # gen_train_val_test_matrix()
+    """
     """
 

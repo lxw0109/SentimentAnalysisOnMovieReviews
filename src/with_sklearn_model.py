@@ -10,6 +10,7 @@ import pandas as pd
 from sklearn import linear_model
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
+from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import StratifiedKFold
 
@@ -65,15 +66,16 @@ def train_val_predict(X_train, X_val, X_test, X_test_id, y_train, y_val):
     # 7. RF: 随机森林
     from sklearn.ensemble import RandomForestClassifier
     # n_jobs: If -1, the number of jobs is set to the number of cores.
-    model = RandomForestClassifier(n_estimators=1200, min_samples_leaf=10, n_jobs=-1, random_state=0)
+    model = RandomForestClassifier(n_estimators=200, max_features=None, min_samples_leaf=50, n_jobs=-1, random_state=0)
 
     model.fit(X_train, y_train)
     y_val_pred = model.predict(X_val)
     print(f"classification_report: {classification_report(y_val, y_val_pred)}")  # y_true, y_pred
     print(f"Mean accuracy score: {accuracy_score(y_val, y_val_pred)}\n{'--' * 20}\n")  # 0.33
-    print(f"y_val: {y_val}\ny_val_pred: {y_val_pred}\n{'--' * 20}\]n")
+    # print(f"y_val: {y_val}\ny_val_pred: {y_val_pred}\n{'--' * 20}\]n")
 
     print(f"model.score: {model.score(X_val, y_val)}\n{'--' * 20}\n")  # 0.33
+    print(f"auc_roc_score: {roc_auc_score(y_val, y_val_pred)}\n{'--' * 20}\n")  # 
 
     # cv = StratifiedKFold(n_splits=5, shuffle=True)
     scores = cross_val_score(model, X_train, y_train, cv=5)
